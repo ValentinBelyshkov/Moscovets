@@ -5,7 +5,7 @@ from typing import List, Optional
 
 class Settings(BaseSettings):
     # Project info
-    PROJECT_NAME: str = "Moskvitz3D API"
+    PROJECT_NAME: str = "Московец 3D API"
     PROJECT_VERSION: str = "1.0.0"
     
     # API settings

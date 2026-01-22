@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-This report analyzes the backend structure of the Moskvitz3D dental modeling application and identifies significant duplication and architectural issues that need to be addressed.
+This report analyzes the backend structure of the Московец 3D dental modeling application and identifies significant duplication and architectural issues that need to be addressed.
 
 ## Duplicates Identified
 

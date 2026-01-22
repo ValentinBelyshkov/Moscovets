@@ -84,7 +84,7 @@ logger.info("API routers included successfully")
 @app.get("/")
 async def root():
     return {
-        "message": "Moskvitz3D API",
+        "message": "Московец 3D API",
         "docs": "/docs",
         "api": "/api/v1",
         "status": "running"
