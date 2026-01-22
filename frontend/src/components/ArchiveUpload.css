@@ -1,0 +1,288 @@
+.archive-upload {
+  margin: 30px 0;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.archive-upload h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #333;
+  font-size: 1.3em;
+  border-bottom: 2px solid #007bff;
+  padding-bottom: 8px;
+}
+
+/* Drag and Drop Area */
+.archive-drop-area {
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  padding: 40px 20px;
+  text-align: center;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  background-color: #fff;
+  margin-bottom: 20px;
+}
+
+.archive-drop-area:hover {
+  border-color: #007bff;
+  background-color: #f8f9ff;
+}
+
+.archive-drop-area.drag-active {
+  border-color: #007bff;
+  background-color: #e3f2fd;
+  transform: scale(1.02);
+}
+
+.archive-drop-area.has-file {
+  border-color: #28a745;
+  background-color: #f8fff8;
+}
+
+.drop-area-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.drop-icon {
+  font-size: 48px;
+  margin-bottom: 10px;
+}
+
+.drop-area-content p {
+  margin: 5px 0;
+  color: #666;
+}
+
+.drop-hint {
+  font-size: 14px;
+  color: #888;
+  font-style: italic;
+}
+
+.browse-button {
+  background-color: #007bff;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 10px;
+}
+
+.browse-button:hover {
+  background-color: #0056b3;
+}
+
+/* Selected File */
+.selected-file {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  border: 1px solid #28a745;
+}
+
+.file-icon {
+  font-size: 36px;
+  flex-shrink: 0;
+}
+
+.file-info {
+  flex: 1;
+  text-align: left;
+}
+
+.file-name {
+  font-weight: bold;
+  margin: 0 0 5px 0;
+  color: #333;
+}
+
+.file-size {
+  margin: 0 0 10px 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.archive-details {
+  background-color: #f8f9fa;
+  padding: 10px;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.archive-details p {
+  margin: 3px 0;
+  color: #555;
+}
+
+.reset-button {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #dc3545;
+  padding: 5px;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s ease;
+}
+
+.reset-button:hover {
+  background-color: #ffebee;
+}
+
+.reset-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Upload Actions */
+.upload-actions {
+  text-align: center;
+  margin: 20px 0;
+}
+
+.upload-button {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.upload-button:hover:not(:disabled) {
+  background-color: #218838;
+}
+
+.upload-button:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Spinner */
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #ffffff;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Archive Info */
+.archive-info {
+  margin-top: 30px;
+  padding: 15px;
+  background-color: #e9f7fe;
+  border-radius: 6px;
+  border-left: 4px solid #007bff;
+}
+
+.archive-info h4 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #007bff;
+}
+
+.archive-info ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.archive-info li {
+  margin-bottom: 5px;
+  color: #555;
+  font-size: 14px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .archive-upload {
+    padding: 15px;
+  }
+  
+  .archive-drop-area {
+    padding: 30px 15px;
+  }
+  
+  .selected-file {
+    flex-direction: column;
+    text-align: center;
+    gap: 10px;
+  }
+  
+  .file-info {
+    text-align: center;
+  }
+  
+  .upload-button {
+    font-size: 14px;
+    padding: 10px 20px;
+  }
+}
+
+/* Animation for file selection */
+.archive-drop-area.has-file {
+  animation: fileSelected 0.5s ease;
+}
+
+@keyframes fileSelected {
+  0% {
+    transform: scale(1);
+    border-color: #ccc;
+  }
+  50% {
+    transform: scale(1.05);
+    border-color: #007bff;
+  }
+  100% {
+    transform: scale(1);
+    border-color: #28a745;
+  }
+}
+
+/* Error states */
+.archive-drop-area.error {
+  border-color: #dc3545;
+  background-color: #ffebee;
+}
+
+.archive-drop-area.error .drop-icon {
+  color: #dc3545;
+}
+
+/* Success states */
+.archive-drop-area.success {
+  border-color: #28a745;
+  background-color: #f8fff8;
+}
+
+.archive-drop-area.success .drop-icon {
+  color: #28a745;
+}

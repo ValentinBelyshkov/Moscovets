@@ -1,0 +1,321 @@
+// Сервис для работы с файлами через API
+class FileService {
+  constructor() {
+    this.baseUrl = '/api/v1/files';
+  }
+
+  // Загрузка файла
+  async uploadFile(file, patientId, description = '') {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('patient_id', patientId);
+      formData.append('description', description);
+
+      // Add timeout to prevent hanging requests
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout for file uploads
+      
+      const response = await fetch(`${this.baseUrl}/upload`, {
+        method: 'POST',
+        body: formData,
+        signal: controller.signal
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('HTTP error response:', errorText);
+        console.error('Response status:', response.status);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+
+      const result = await response.json();
+      console.log('File uploaded successfully:', result);
+      return result;
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      
+      // Provide more specific error messages
+      if (error.name === 'AbortError') {
+        throw new Error('Превышено время ожидания ответа от сервера. Проверьте, что сервер запущен и доступен.');
+      } else if (error instanceof TypeError && error.message.includes('fetch')) {
+        throw new Error('Не удалось подключиться к серверу. Проверьте, что сервер запущен и доступен. ' + error.message);
+      }
+      
+      throw error;
+    }
+  }
+
+  // Скачивание файла
+  async downloadFile(fileId) {
+    try {
+      // Add timeout to prevent hanging requests
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
+      const response = await fetch(`${this.baseUrl}/download/${fileId}`, {
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('HTTP error response:', errorText);
+        console.error('Response status:', response.status);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+
+      const result = await response.blob();
+      console.log('File downloaded successfully');
+      return result;
+    } catch (error) {
+      console.error('Error downloading file:', error);
+      
+      // Provide more specific error messages
+      if (error.name === 'AbortError') {
+        throw new Error('Превышено время ожидания ответа от сервера. Проверьте, что сервер запущен и доступен.');
+      } else if (error instanceof TypeError && error.message.includes('fetch')) {
+        throw new Error('Не удалось подключиться к серверу. Проверьте, что сервер запущен и доступен. ' + error.message);
+      }
+      
+      throw error;
+    }
+  }
+
+  // Получение списка файлов
+  async getFiles(skip = 0, limit = 100) {
+    try {
+      // Add timeout to prevent hanging requests
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
+      const response = await fetch(`${this.baseUrl}?skip=${skip}&limit=${limit}`, {
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('HTTP error response:', errorText);
+        console.error('Response status:', response.status);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+
+      const result = await response.json();
+      console.log('Files fetched successfully:', result);
+      return result;
+    } catch (error) {
+      console.error('Error fetching files:', error);
+      
+      // Provide more specific error messages
+      if (error.name === 'AbortError') {
+        throw new Error('Превышено время ожидания ответа от сервера. Проверьте, что сервер запущен и доступен.');
+      } else if (error instanceof TypeError && error.message.includes('fetch')) {
+        throw new Error('Не удалось подключиться к серверу. Проверьте, что сервер запущен и доступен. ' + error.message);
+      }
+      
+      throw error;
+    }
+  }
+
+  // Получение файла по ID
+  async getFileById(id) {
+    try {
+      // Add timeout to prevent hanging requests
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
+      const response = await fetch(`${this.baseUrl}/${id}`, {
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('HTTP error response:', errorText);
+        console.error('Response status:', response.status);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+
+      const result = await response.json();
+      console.log('File fetched successfully:', result);
+      return result;
+    } catch (error) {
+      console.error('Error fetching file:', error);
+      
+      // Provide more specific error messages
+      if (error.name === 'AbortError') {
+        throw new Error('Превышено время ожидания ответа от сервера. Проверьте, что сервер запущен и доступен.');
+      } else if (error instanceof TypeError && error.message.includes('fetch')) {
+        throw new Error('Не удалось подключиться к серверу. Проверьте, что сервер запущен и доступен. ' + error.message);
+      }
+      
+      throw error;
+    }
+  }
+
+  // Удаление файла
+  async deleteFile(id) {
+    try {
+      // Add timeout to prevent hanging requests
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
+      const response = await fetch(`${this.baseUrl}/${id}`, {
+        method: 'DELETE',
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('HTTP error response:', errorText);
+        console.error('Response status:', response.status);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+
+      const result = await response.json();
+      console.log('File deleted successfully:', result);
+      return result;
+    } catch (error) {
+      console.error('Error deleting file:', error);
+      
+      // Provide more specific error messages
+      if (error.name === 'AbortError') {
+        throw new Error('Превышено время ожидания ответа от сервера. Проверьте, что сервер запущен и доступен.');
+      } else if (error instanceof TypeError && error.message.includes('fetch')) {
+        throw new Error('Не удалось подключиться к серверу. Проверьте, что сервер запущен и доступен. ' + error.message);
+      }
+      
+      throw error;
+    }
+  }
+
+  // Получение истории версий файла
+  async getFileVersions(fileId) {
+    try {
+      // Add timeout to prevent hanging requests
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
+      const response = await fetch(`${this.baseUrl}/${fileId}/versions`, {
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('HTTP error response:', errorText);
+        console.error('Response status:', response.status);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+
+      const result = await response.json();
+      console.log('File versions fetched successfully:', result);
+      return result;
+    } catch (error) {
+      console.error('Error fetching file versions:', error);
+      
+      // Provide more specific error messages
+      if (error.name === 'AbortError') {
+        throw new Error('Превышено время ожидания ответа от сервера. Проверьте, что сервер запущен и доступен.');
+      } else if (error instanceof TypeError && error.message.includes('fetch')) {
+        throw new Error('Не удалось подключиться к серверу. Проверьте, что сервер запущен и доступен. ' + error.message);
+      }
+      
+      throw error;
+    }
+  }
+
+  // Загрузка новой версии файла
+  async uploadFileVersion(fileId, file) {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      // Add timeout to prevent hanging requests
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout for file uploads
+      
+      const response = await fetch(`${this.baseUrl}/upload-version/${fileId}`, {
+        method: 'POST',
+        body: formData,
+        signal: controller.signal
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('HTTP error response:', errorText);
+        console.error('Response status:', response.status);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+
+      const result = await response.json();
+      console.log('File version uploaded successfully:', result);
+      return result;
+    } catch (error) {
+      console.error('Error uploading file version:', error);
+      
+      // Provide more specific error messages
+      if (error.name === 'AbortError') {
+        throw new Error('Превышено время ожидания ответа от сервера. Проверьте, что сервер запущен и доступен.');
+      } else if (error instanceof TypeError && error.message.includes('fetch')) {
+        throw new Error('Не удалось подключиться к серверу. Проверьте, что сервер запущен и доступен. ' + error.message);
+      }
+      
+      throw error;
+    }
+  }
+
+  // Скачивание конкретной версии файла
+  async downloadFileVersion(versionId) {
+    // В текущей реализации бэкенда скачивание конкретной версии не поддерживается
+    // Поэтому мы скачиваем основной файл, который указывает на последнюю версию
+    // Для полноценной реализации потребуется доработка бэкенда
+    try {
+      // Add timeout to prevent hanging requests
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
+      const response = await fetch(`${this.baseUrl}/download/${versionId}`, {
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('HTTP error response:', errorText);
+        console.error('Response status:', response.status);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+
+      const result = await response.blob();
+      console.log('File version downloaded successfully');
+      return result;
+    } catch (error) {
+      console.error('Error downloading file version:', error);
+      
+      // Provide more specific error messages
+      if (error.name === 'AbortError') {
+        throw new Error('Превышено время ожидания ответа от сервера. Проверьте, что сервер запущен и доступен.');
+      } else if (error instanceof TypeError && error.message.includes('fetch')) {
+        throw new Error('Не удалось подключиться к серверу. Проверьте, что сервер запущен и доступен. ' + error.message);
+      }
+      
+      throw error;
+    }
+  }
+}
+
+const localFileService = new FileService();
+export { localFileService as default };

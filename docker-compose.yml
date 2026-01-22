@@ -1,0 +1,72 @@
+name: moskvitz3d
+
+services:
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "5001:5001"
+    volumes:
+      - ./backend:/app/backend
+      - ./backend/logs:/app/backend/logs
+    environment:
+      - DATABASE_URL=postgresql://moskvitz3d:moskvitz3d@db:5432/moskvitz3d
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      # Убираем volume mount для большей надежности
+      # - ./frontend/build:/usr/share/nginx/html:ro
+      - ./frontend/nginx.conf:/etc/nginx/nginx.conf:ro
+    environment:
+      - REACT_APP_API_URL=http://localhost:5001
+    depends_on:
+      - backend
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: moskvitz3d
+      POSTGRES_PASSWORD: moskvitz3d
+      POSTGRES_DB: moskvitz3d
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U moskvitz3d"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  postgres_data:

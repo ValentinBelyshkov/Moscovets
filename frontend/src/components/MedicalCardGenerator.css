@@ -1,0 +1,55 @@
+.medical-card-generator {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.medical-card-generator h2 {
+  color: #333;
+  border-bottom: 2px solid #007bff;
+  padding-bottom: 10px;
+}
+
+.generator-settings {
+  background-color: #f8f9fa;
+  padding: 20px;
+  border-radius: 5px;
+  margin: 20px 0;
+}
+
+.generator-settings div {
+  margin-bottom: 15px;
+}
+
+.generator-settings label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.generator-settings select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  box-sizing: border-box;
+}
+
+.generate-action {
+  text-align: center;
+  margin: 30px 0;
+}
+
+.generate-action button {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  font-size: 18px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.generate-action button:hover {
+  background-color: #218838;
+}

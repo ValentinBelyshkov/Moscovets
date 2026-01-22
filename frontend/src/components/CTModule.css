@@ -1,0 +1,500 @@
+.ct-module {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Remove default list styling that might cause bullets/checkmarks */
+.ct-module ul,
+.ct-module ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.ct-module li {
+  list-style: none;
+}
+
+/* Ensure no default checkbox styling */
+.ct-module input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+/* Remove any default styling for list items that might cause markers */
+.ct-module li::before {
+  content: none;
+}
+
+.ct-module ul li::before,
+.ct-module ol li::before {
+  content: none;
+}
+
+.ct-module h2 {
+  color: #333;
+  border-bottom: 2px solid #007bff;
+  padding-bottom: 10px;
+}
+
+.module-description {
+  background-color: #e9f7fe;
+  border-left: 4px solid #007bff;
+  padding: 15px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  color: #333;
+}
+
+.patient-info {
+  background-color: #f8f9fa;
+  padding: 20px;
+  border-radius: 5px;
+  margin: 20px 0;
+}
+
+.patient-info h3 {
+  margin-top: 0;
+}
+
+.ct-upload {
+  margin: 30px 0;
+}
+
+.ct-upload h3 {
+  color: #555;
+}
+
+.ct-upload input[type="file"] {
+  display: none;
+}
+
+.ct-upload label {
+  background-color: #007bff;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  display: inline-block;
+}
+
+.ct-upload label:hover {
+  background-color: #0056b3;
+}
+
+.ct-upload button {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+.ct-upload button:hover {
+  background-color: #c82333;
+}
+
+.ct-upload .hint {
+  font-size: 12px;
+  color: #666;
+  margin-top: 5px;
+}
+
+.ct-upload .hint.note {
+  font-style: italic;
+  color: #888;
+  margin-top: 10px;
+}
+
+/* Upload Mode Selector */
+.upload-mode-selector {
+  margin-bottom: 25px;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.upload-mode-selector h4 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #333;
+  font-size: 1.1em;
+}
+
+.mode-buttons {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.mode-buttons button {
+  flex: 1;
+  min-width: 200px;
+  padding: 12px 20px;
+  background-color: #e9ecef;
+  border: 2px solid #ced4da;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.mode-buttons button:hover {
+  background-color: #dee2e6;
+  border-color: #adb5bd;
+}
+
+.mode-buttons button.active {
+  background-color: #007bff;
+  border-color: #007bff;
+  color: white;
+}
+
+.mode-buttons button.active:hover {
+  background-color: #0056b3;
+  border-color: #0056b3;
+}
+
+/* Folder Upload Container */
+.folder-upload {
+  margin-top: 20px;
+}
+
+/* Responsive Design for Upload Mode Selector */
+@media (max-width: 768px) {
+  .mode-buttons {
+    flex-direction: column;
+  }
+  
+  .mode-buttons button {
+    min-width: auto;
+    width: 100%;
+  }
+  
+  .upload-mode-selector {
+    padding: 15px;
+  }
+}
+
+.loading {
+  color: #007bff;
+  font-style: italic;
+}
+
+.error-message {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 10px;
+  border-radius: 5px;
+  margin: 10px 0;
+}
+
+/* Viewer Styles */
+.ct-viewer-container {
+  display: flex;
+  margin: 30px 0;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.viewer-controls {
+  width: 250px;
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-right: 1px solid #ddd;
+}
+
+.viewer-controls h4 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #555;
+}
+
+.viewer-controls button {
+  display: block;
+  width: 100%;
+  margin: 5px 0;
+  padding: 8px;
+  background-color: #e9ecef;
+  border: 1px solid #ced4da;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.viewer-controls button.active {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.viewer-controls button:hover:not(.active) {
+  background-color: #dee2e6;
+}
+
+.window-level-controls div {
+  margin: 10px 0;
+}
+
+.window-level-controls label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.window-level-controls input[type="range"] {
+  width: 100%;
+}
+
+.zoom-controls {
+  text-align: center;
+}
+
+.zoom-controls span {
+  display: inline-block;
+  margin: 0 10px;
+  min-width: 50px;
+}
+
+.pan-controls {
+  text-align: center;
+}
+
+.pan-controls button {
+  margin: 5px;
+  padding: 5px 10px;
+}
+
+.viewer-display {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #000;
+  min-height: 500px;
+  overflow: hidden;
+}
+
+.viewer-canvas {
+  position: relative;
+  transform-origin: center;
+}
+
+.image-placeholder {
+  width: 400px;
+  height: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #333;
+  color: #fff;
+  border: 1px dashed #666;
+}
+
+.image-placeholder p {
+  margin: 10px 0;
+  text-align: center;
+}
+
+.annotation-marker {
+  position: absolute;
+}
+
+.annotation-dot {
+  width: 8px;
+  height: 8px;
+  background-color: red;
+  border-radius: 50%;
+  position: absolute;
+  transform: translate(-50%, -50%);
+}
+
+.annotation-text {
+  position: absolute;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 2px 5px;
+  border-radius: 3px;
+  font-size: 12px;
+  white-space: nowrap;
+  transform: translate(10px, -10px);
+}
+
+/* Measurements Section */
+.measurements-section {
+  margin: 30px 0;
+}
+
+.measurement-group {
+  margin-bottom: 30px;
+}
+
+.measurement-group h4 {
+  color: #555;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 5px;
+}
+
+.measurements table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.measurements th,
+.measurements td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.measurements th {
+  background-color: #f2f2f2;
+  font-weight: bold;
+}
+
+.measurements tr:hover {
+  background-color: #f5f5f5;
+}
+
+.measurements input[type="number"] {
+  width: 80px;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+}
+
+.measurement-description {
+  font-size: 14px;
+  color: #666;
+  font-style: italic;
+  margin-top: 10px;
+}
+
+/* Report Section */
+.report-section {
+  margin: 30px 0;
+}
+
+/* Cornerstone Viewport */
+.cornerstone-viewport {
+  width: 100%;
+  height: 100%;
+}
+
+.report-section h3 {
+  color: #555;
+}
+
+.report-content {
+  background-color: #f8f9fa;
+  padding: 20px;
+  border-radius: 5px;
+}
+
+.report-content button {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.report-content button:hover {
+  background-color: #218838;
+}
+
+.actions {
+  text-align: center;
+  margin: 30px 0;
+}
+
+.actions button {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  font-size: 18px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.actions button:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.actions button:hover:not(:disabled) {
+  background-color: #218838;
+}
+
+/* Uploaded files list styles */
+.uploaded-files-list {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #e9f7ef;
+  border-radius: 5px;
+  border: 1px solid #d4edda;
+}
+
+.uploaded-files-list h4 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #155724;
+}
+
+.uploaded-files-list ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.uploaded-files-list li {
+  margin-bottom: 5px;
+  color: #155724;
+  font-size: 14px;
+}
+
+/* Plane selector styles */
+.plane-selector {
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid #ddd;
+}
+
+.plane-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.plane-buttons button {
+  width: 100%;
+  padding: 8px;
+  background-color: #e9ecef;
+  border: 1px solid #ced4da;
+  border-radius: 3px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.plane-buttons button.active {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.plane-buttons button:hover:not(.active) {
+  background-color: #dee2e6;
+}

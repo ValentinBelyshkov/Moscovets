@@ -1,0 +1,123 @@
+import React, { useState, useEffect } from 'react';
+// Используем локальный сервис вместо серверного
+import localFileService from '../services/localFileService';
+
+const FileUpload = ({ onUploadSuccess }) => {
+  const [files, setFiles] = useState([]);
+  const [patientId, setPatientId] = useState('');
+  const [description, setDescription] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const [storageInfo, setStorageInfo] = useState({ used: 0, total: 0, percentage: 0, filesCount: 0 });
+
+  // Получение информации о хранилище при монтировании компонента
+  useEffect(() => {
+    const info = localFileService.getStorageInfo();
+    setStorageInfo(info);
+  }, []);
+
+  const handleFileChange = (e) => {
+    const selectedFiles = Array.from(e.target.files);
+    // Получаем актуальную информацию о хранилище
+    const info = localFileService.getStorageInfo();
+    setStorageInfo(info);
+    
+    // Проверяем каждый файл на соответствие лимиту
+    for (const file of selectedFiles) {
+      if (file.size > localFileService.maxStorageSize) { // Используем лимит из сервиса
+        alert(`Размер файла ${file.name} превышает допустимый лимит (${localFileService.maxStorageSize / (1024 * 1024)}MB). Пожалуйста, выберите файлы меньшего размера.`);
+        e.target.value = ''; // Clear the input
+        return;
+      }
+    }
+    setFiles(selectedFiles);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (files.length === 0 || !patientId) {
+      alert('Пожалуйста, выберите файлы и укажите ID пациента');
+      return;
+    }
+
+    setUploading(true);
+    
+    try {
+      // Загружаем все выбранные файлы
+      const uploadPromises = files.map(file =>
+        localFileService.uploadFile(file, patientId, description)
+      );
+      
+      const results = await Promise.all(uploadPromises);
+      
+      // Обновляем информацию о хранилище
+      const info = localFileService.getStorageInfo();
+      setStorageInfo(info);
+      
+      alert(`Успешно загружено ${results.length} файлов!`);
+      onUploadSuccess && onUploadSuccess(results);
+      setFiles([]);
+      setPatientId('');
+      setDescription('');
+    } catch (error) {
+      console.error('File upload error:', error);
+      // Проверяем тип ошибки и показываем соответствующее сообщение
+      if (error.message.includes('лимит')) {
+        alert(`Ошибка загрузки файлов: ${error.message} Рекомендуется удалить старые файлы для освобождения места.`);
+      } else {
+        alert(`Ошибка загрузки файлов: ${error.message}`);
+      }
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div className="file-upload">
+      <h3>Загрузить файл</h3>
+      {/* Информация о хранилище */}
+      <div className="storage-info">
+        <p>Использование хранилища: {Math.round(storageInfo.percentage)}% ({Math.round(storageInfo.used / 1024)} KB / {Math.round(storageInfo.total / 1024)} KB)</p>
+        <p>Файлов в хранилище: {storageInfo.filesCount}</p>
+        {storageInfo.percentage > 80 && (
+          <p className="warning">Внимание: Хранилище почти заполнено. Рекомендуется удалить старые файлы.</p>
+        )}
+      </div>
+      <form onSubmit={handleSubmit}>
+        <div>
+          <label htmlFor="file">Файл:</label>
+          <input
+            type="file"
+            id="file"
+            onChange={handleFileChange}
+            required
+            multiple
+          />
+        </div>
+        <div>
+          <label htmlFor="patient-id">ID пациента:</label>
+          <input
+            type="number"
+            id="patient-id"
+            value={patientId}
+            onChange={(e) => setPatientId(e.target.value)}
+            required
+          />
+        </div>
+        <div>
+          <label htmlFor="description">Описание:</label>
+          <textarea
+            id="description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows="3"
+          ></textarea>
+        </div>
+        <button type="submit" disabled={uploading}>
+          {uploading ? 'Загрузка...' : 'Загрузить'}
+        </button>
+      </form>
+    </div>
+  );
+};
+
+export default FileUpload;

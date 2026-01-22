@@ -1,0 +1,61 @@
+# =========================
+# Python / Flask
+# =========================
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+ENV/
+.env
+.venv
+
+# IDEs
+.vscode/
+.idea/
+
+# Logs and databases
+*.log
+instance/
+*.sqlite3
+*.db
+
+# Local config (e.g. Flask secrets)
+config/local.py
+
+# =========================
+# Node.js / React
+# =========================
+
+# Dependencies
+node_modules/
+
+# Build outputs
+/build
+/dist
+/public/build
+
+# Environment variables
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Misc
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Editor directories
+.DS_Store
+
+# =========================
+# General
+# =========================
+
+# OS
+Thumbs.db

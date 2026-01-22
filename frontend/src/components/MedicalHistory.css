@@ -1,0 +1,134 @@
+.medical-history {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.medical-history h2 {
+  color: #333;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.medical-history h3 {
+  color: #555;
+  margin-top: 25px;
+  margin-bottom: 15px;
+}
+
+.records-list table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.records-list th,
+.records-list td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.records-list th {
+  background-color: #f8f9fa;
+  font-weight: bold;
+}
+
+.records-list tr:hover {
+  background-color: #f5f5f5;
+}
+
+.records-list button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.records-list button:hover {
+  background-color: #0056b3;
+}
+
+.record-history {
+  margin-top: 30px;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.history-timeline {
+  margin-bottom: 20px;
+}
+
+.history-item {
+  margin-bottom: 25px;
+  padding: 15px;
+  background-color: white;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #eee;
+}
+
+.history-date {
+  font-weight: bold;
+  color: #007bff;
+}
+
+.history-user {
+  color: #666;
+  font-style: italic;
+}
+
+.history-content {
+  margin-top: 10px;
+}
+
+.history-data,
+.history-notes {
+  margin-bottom: 15px;
+}
+
+.history-data pre {
+  background-color: #f1f1f1;
+  padding: 10px;
+  border-radius: 4px;
+  overflow-x: auto;
+  font-size: 12px;
+}
+
+.history-notes p {
+  margin: 5px 0;
+  padding: 8px;
+  background-color: #e9ecef;
+  border-radius: 4px;
+}
+
+.record-history button {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.record-history button:hover {
+  background-color: #545b62;
+}
+
+.medical-history .error {
+  color: #dc3545;
+  text-align: center;
+  padding: 20px;
+}
