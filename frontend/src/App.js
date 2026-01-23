@@ -142,7 +142,7 @@ function App() {
           <div className="flex flex-col min-h-screen">
             <header className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-4 shadow-lg flex items-center justify-between flex-wrap gap-4 md:gap-0">
               <div className="flex items-center space-x-4">
-                <h1 className="text-xl md:text-2xl font-bold m-0">Moskvitz 3D</h1>
+                <h1 className="text-xl md:text-2xl font-bold m-0">Moskovets 3D</h1>
                 <p className="m-0">Добро пожаловать, {user?.username}!</p>
               </div>
               
@@ -227,7 +227,7 @@ function App() {
             
             {/* Простой футер */}
             <footer className="bg-gradient-to-r from-gray-800 to-gray-900 text-white p-4 text-center text-sm shadow-inner">
-              <p>© 2024 Moskvitz 3D. Все права защищены.</p>
+              <p>© 2024 Moskovets 3D. Все права защищены.</p>
               <p className="text-xs text-gray-400 mt-2">Версия: 1.0.0</p>
             </footer>
           </div>

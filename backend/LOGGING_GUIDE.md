@@ -230,13 +230,13 @@ filebeat.inputs:
     - /app/logs/modeling.log
     - /app/logs/app.log
   fields:
-    service: moskvitz3d
+    service: moskovets3d
     module: biometry
   fields_under_root: true
 
 output.elasticsearch:
   hosts: ["elasticsearch:9200"]
-  index: "moskvitz3d-logs-%{+yyyy.MM.dd}"
+  index: "moskovets3d-logs-%{+yyyy.MM.dd}"
 ```
 
 ### 8. Советы и рекомендации
@@ -250,7 +250,7 @@ output.elasticsearch:
 ### 9. Примеры logrotate конфигурации
 
 ```bash
-# /etc/logrotate.d/moskvitz3d
+# /etc/logrotate.d/moskovets3d
 /app/logs/*.log {
     daily
     missingok
@@ -261,7 +261,7 @@ output.elasticsearch:
     create 644 root root
     postrotate
         # Команда для перезапуска приложения (если нужно)
-        # systemctl restart moskvitz3d
+        # systemctl restart moskovets3d
     endscript
 }
 ```

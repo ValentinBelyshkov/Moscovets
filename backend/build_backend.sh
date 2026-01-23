@@ -25,7 +25,7 @@ pip install pyinstaller
 
 # Build the application
 echo "Building application with PyInstaller..."
-pyinstaller --onefile --name moskvitz3d_backend main.py
+pyinstaller --onefile --name moskovets3d_backend main.py
 
 # Deactivate virtual environment
 deactivate

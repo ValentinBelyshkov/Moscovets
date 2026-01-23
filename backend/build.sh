@@ -15,7 +15,7 @@ pip install -r requirements.txt
 pip install pyinstaller
 
 # Build the application
-pyinstaller --onefile --name moskvitz3d_backend main.py
+pyinstaller --onefile --name moskovets3d_backend main.py
 
 # Deactivate virtual environment
 deactivate

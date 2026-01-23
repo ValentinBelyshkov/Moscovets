@@ -22,8 +22,8 @@ from app.models.modeling import ThreeDModel, ModelingSession
 def recreate_database():
     """Пересоздает базу данных"""
     print("Удаление старой базы данных...")
-    if os.path.exists("moskvitz3d.db"):
-        os.remove("moskvitz3d.db")
+    if os.path.exists("moskovets3d.db"):
+        os.remove("moskovets3d.db")
     
     print("Создание новой базы данных...")
     Base.metadata.create_all(bind=engine)
