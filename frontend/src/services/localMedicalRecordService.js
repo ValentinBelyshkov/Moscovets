@@ -1,7 +1,7 @@
 // Локальный сервис для работы с медицинскими записями через localStorage
 class LocalMedicalRecordService {
   constructor() {
-    this.storageKey = 'moskvitz3d_medical_records';
+    this.storageKey = 'moskovets3d_medical_records';
     this.initializeStorage();
   }
 

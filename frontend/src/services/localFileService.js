@@ -1,7 +1,7 @@
 // Локальный сервис для работы с файлами через localStorage
 class LocalFileService {
   constructor() {
-    this.storageKey = 'moskvitz3d_files';
+    this.storageKey = 'moskovets3d_files';
     this.maxStorageSize = 50 * 1024 * 1024; // 50MB per file limit
     this.totalStorageLimit = 200 * 1024 * 1024; // 200MB total storage limit
     this.initializeStorage();

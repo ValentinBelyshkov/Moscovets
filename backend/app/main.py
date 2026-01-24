@@ -1,4 +1,4 @@
-"""FastAPI application for Moskvitz3D project."""
+"""FastAPI application for Moskovets-3D project."""
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -27,7 +27,7 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 
 @app.get("/")
 async def root():
-    return {"message": "Welcome to Moskvitz3D API", "version": settings.PROJECT_VERSION}
+    return {"message": "Welcome to Moskovets-3D API", "version": settings.PROJECT_VERSION}
 
 
 @app.get("/health")

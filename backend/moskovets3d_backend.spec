@@ -53,7 +53,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name='moskvitz3d_backend',
+    name='moskovets3d_backend',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,

@@ -1,4 +1,4 @@
-name: moskvitz3d
+name: moskovets3d
 
 services:
   backend:
@@ -10,7 +10,7 @@ services:
       - ./backend:/app/backend
       - ./backend/logs:/app/backend/logs
     environment:
-      - DATABASE_URL=postgresql://moskvitz3d:moskvitz3d@db:5432/moskvitz3d
+      - DATABASE_URL=postgresql://moskovets3d:moskovets3d@db:5432/moskovets3d
     depends_on:
       db:
         condition: service_healthy
@@ -48,9 +48,9 @@ services:
   db:
     image: postgres:13
     environment:
-      POSTGRES_USER: moskvitz3d
-      POSTGRES_PASSWORD: moskvitz3d
-      POSTGRES_DB: moskvitz3d
+      POSTGRES_USER: moskovets3d
+      POSTGRES_PASSWORD: moskovets3d
+      POSTGRES_DB: moskovets3d
     ports:
       - "5432:5432"
     volumes:
@@ -58,7 +58,7 @@ services:
     networks:
       - app-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U moskvitz3d"]
+      test: ["CMD-SHELL", "pg_isready -U moskovets3d"]
       interval: 10s
       timeout: 5s
       retries: 5
