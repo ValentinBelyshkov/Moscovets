@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import PatientCard from './PatientCard';
 import patientService from '../services/patientService';
 
 const PatientDirectory = () => {
+  const navigate = useNavigate();
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -14,7 +16,6 @@ const PatientDirectory = () => {
     gender: '',
     contact_info: ''
   });
-  const [selectedPatient, setSelectedPatient] = useState(null);
 
   // Загрузка пациентов при монтировании компонента
   useEffect(() => {
@@ -69,17 +70,8 @@ const PatientDirectory = () => {
   };
 
   const handleViewPatientCard = (patient) => {
-    setSelectedPatient(patient);
+    navigate(`/patients/${patient.id}`);
   };
-
-  const handleBackToDirectory = () => {
-    setSelectedPatient(null);
-  };
-
-  // Если выбран пациент, показываем его карточку
-  if (selectedPatient) {
-    return <PatientCard patient={selectedPatient} onBack={handleBackToDirectory} />;
-  }
 
   return (
     <div className="max-w-6xl mx-auto p-6">
