@@ -41,8 +41,6 @@ function AuthWrapper({ onLogin, onLogout, isLoggedIn, user }) {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    // Удаляем токен при выходе
-    localStorage.removeItem('token');
     onLogout();
     navigate('/login');
   };
@@ -169,30 +167,63 @@ function App() {
   // Проверка токена при запуске приложения
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (token) {
-      // В реальном приложении мы бы проверили токен с бэкендом
-      setIsLoggedIn(true);
-      setUser({ username: 'test', token: token });
-    } else {
-      // В локальном режиме автоматически логинимся с тестовыми учетными данными
-      setIsLoggedIn(true);
-      setUser({ username: 'test', token: 'demo_token' });
+
+    if (!token) {
+      setIsLoggedIn(false);
+      setUser(null);
+      setInitialLoad(false);
+      return;
     }
-    setInitialLoad(false);
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+    fetch('/api/v1/auth/me', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      signal: controller.signal,
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          throw new Error('Unauthorized');
+        }
+        return response.json();
+      })
+      .then((userInfo) => {
+        setIsLoggedIn(true);
+        setUser({ ...userInfo, token });
+        if (userInfo?.username) {
+          localStorage.setItem('username', userInfo.username);
+        }
+      })
+      .catch(() => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('username');
+        setIsLoggedIn(false);
+        setUser(null);
+      })
+      .finally(() => {
+        clearTimeout(timeoutId);
+        setInitialLoad(false);
+      });
   }, []);
 
   const handleLogin = (userData) => {
     setIsLoggedIn(true);
     setUser(userData);
-    // Сохраняем токен в localStorage
-    if (userData.token) {
+
+    if (userData?.token) {
       localStorage.setItem('token', userData.token);
+    }
+    if (userData?.username) {
+      localStorage.setItem('username', userData.username);
     }
   };
 
   const handleLogout = () => {
-    // Удаляем токен при выходе
     localStorage.removeItem('token');
+    localStorage.removeItem('username');
     setIsLoggedIn(false);
     setUser(null);
   };
