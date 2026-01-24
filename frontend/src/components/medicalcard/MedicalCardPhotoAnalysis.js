@@ -1,7 +1,9 @@
 import { useState } from 'react';
+import PhotoUpload from '../PhotoUpload';
 
-const MedicalCardPhotoAnalysis = ({ orthodonticData }) => {
+const MedicalCardPhotoAnalysis = ({ orthodonticData, patientId }) => {
   const [activeTab, setActiveTab] = useState('frontal');
+  const [showUpload, setShowUpload] = useState(false);
   const data = orthodonticData?.photoAnalysis || {};
 
   const tabs = [
@@ -15,9 +17,31 @@ const MedicalCardPhotoAnalysis = ({ orthodonticData }) => {
 
   return (
     <div className="bg-white p-6 rounded-xl shadow-md mb-6 border-l-4 border-cyan-500">
-      <h3 className="text-xl font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200 flex items-center gap-2">
-        <span>📷</span> Фотометрический анализ
-      </h3>
+      <div className="flex justify-between items-center mb-4 pb-2 border-b border-gray-200">
+        <h3 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+          <span>📷</span> Фотометрический анализ
+        </h3>
+        <button
+          onClick={() => setShowUpload(!showUpload)}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-300 ${
+            showUpload 
+              ? 'bg-gray-200 text-gray-700 hover:bg-gray-300' 
+              : 'bg-cyan-100 text-cyan-700 hover:bg-cyan-200 border border-cyan-200'
+          }`}
+        >
+          {showUpload ? '✕ Закрыть загрузку' : '➕ Добавить фото'}
+        </button>
+      </div>
+
+      {showUpload && (
+        <PhotoUpload 
+          patientId={patientId} 
+          onUploadSuccess={() => {
+            // Можно добавить обновление данных здесь, если нужно
+            // setShowUpload(false); 
+          }} 
+        />
+      )}
 
       {/* Вкладки */}
       <div className="flex flex-wrap gap-2 mb-6">

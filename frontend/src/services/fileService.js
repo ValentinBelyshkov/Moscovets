@@ -7,21 +7,29 @@ class FileService {
   }
 
   // Загрузка файла
-  async uploadFile(file, patientId, description = '') {
+  async uploadFile(file, patientId, fileType = 'photo', medicalCategory = 'clinical', studyDate = '', bodyPart = '', description = '') {
     try {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('patient_id', patientId);
+      formData.append('file_type', fileType);
+      formData.append('medical_category', medicalCategory);
+      if (studyDate) formData.append('study_date', studyDate);
+      if (bodyPart) formData.append('body_part', bodyPart);
       formData.append('description', description);
 
       // Add timeout to prevent hanging requests
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout for file uploads
+      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout for file uploads
       
       const response = await fetch(`${this.baseUrl}/upload`, {
         method: 'POST',
         body: formData,
-        signal: controller.signal
+        signal: controller.signal,
+        headers: {
+          // Authorization header should be added here if needed
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
       });
 
       clearTimeout(timeoutId);
@@ -58,6 +66,9 @@ class FileService {
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
       
       const response = await fetch(`${this.baseUrl}/download/${fileId}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
         signal: controller.signal
       });
       
@@ -95,6 +106,9 @@ class FileService {
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
       
       const response = await fetch(`${this.baseUrl}?skip=${skip}&limit=${limit}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
         signal: controller.signal
       });
       
@@ -132,6 +146,9 @@ class FileService {
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
       
       const response = await fetch(`${this.baseUrl}/${id}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
         signal: controller.signal
       });
       
@@ -170,6 +187,9 @@ class FileService {
       
       const response = await fetch(`${this.baseUrl}/${id}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
         signal: controller.signal
       });
       
@@ -207,6 +227,9 @@ class FileService {
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
       
       const response = await fetch(`${this.baseUrl}/${fileId}/versions`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
         signal: controller.signal
       });
       
@@ -248,6 +271,9 @@ class FileService {
       
       const response = await fetch(`${this.baseUrl}/upload-version/${fileId}`, {
         method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
         body: formData,
         signal: controller.signal
       });
@@ -289,6 +315,9 @@ class FileService {
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
       
       const response = await fetch(`${this.baseUrl}/download/${versionId}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
         signal: controller.signal
       });
       
