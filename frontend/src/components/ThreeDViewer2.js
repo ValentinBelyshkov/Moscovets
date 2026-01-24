@@ -891,10 +891,6 @@ const ThreeDViewer2 = React.forwardRef(({
     setIsFitting(true);
     setFittingProgress(0);
 
-    // Сохранить текущие позиции для возможного отката
-    let originalUpperPos;
-    let originalLowerPos;
-
     try {
       // Найти верхнюю и нижнюю челюсти
       const upperJaw = modelRefs.current.upperJaw;
@@ -907,8 +903,8 @@ const ThreeDViewer2 = React.forwardRef(({
       }
 
       // Сохранить текущие позиции для возможного отката
-      originalUpperPos = upperJaw.position.clone();
-      originalLowerPos = lowerJaw.position.clone();
+      const originalUpperPos = upperJaw.position.clone();
+      const originalLowerPos = lowerJaw.position.clone();
 
       // Обновить прогресс
       setFittingProgress(25);
