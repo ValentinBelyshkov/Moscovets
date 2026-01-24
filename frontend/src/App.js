@@ -32,7 +32,7 @@ export const API_BASE_URL = '/api/v1';
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
-  const [currentView, setCurrentView] = useState('dashboard');
+  const [currentView, setCurrentView] = useState('patient-directory');
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [initialLoad, setInitialLoad] = useState(true);
 
@@ -78,10 +78,11 @@ function App() {
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.substring(1);
-      let view = 'dashboard';
+      let view = 'patient-directory';
       
       // Сопоставление хэшей с видами
       const hashMap = {
+        'dashboard': 'dashboard',
         'patient-directory': 'patient-directory',
         'file-library': 'file-library',
         'presentation-generator': 'presentation-generator',
@@ -116,6 +117,7 @@ function App() {
   // Обработка нажатия кнопки "Назад"
   const handleBackToDashboard = () => {
     window.location.hash = '';
+    setCurrentView('patient-directory');
     setSelectedPatient(null);
   };
 
@@ -148,12 +150,12 @@ function App() {
               </div>
               
               <div className="flex flex-wrap gap-2">
-                {currentView !== 'dashboard' && currentView !== 'medical-card' && (
+                {currentView !== 'patient-directory' && currentView !== 'medical-card' && (
                   <button
                     onClick={handleBackToDashboard}
                     className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all duration-300 text-sm font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                   >
-                    Назад к панели управления
+                    Назад к списку пациентов
                   </button>
                 )}
                 
