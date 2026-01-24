@@ -3,4 +3,4 @@
 // Each file is now under 400 lines as per refactoring requirements
 
 // Main refactored component
-export { default } from './medicalcard/MedicalCardRefactored';
+export { default } from './medicalCard/MedicalCardRefactored';
