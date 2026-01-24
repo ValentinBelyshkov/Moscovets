@@ -31,7 +31,7 @@ def create_patient(
     *,
     db: Session = Depends(deps.get_db),
     patient_in: schemas.PatientCreate,
-    current_user: User = Depends(deps.get_current_active_admin),
+    current_user: User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Create new patient.
@@ -45,7 +45,7 @@ def update_patient(
     db: Session = Depends(deps.get_db),
     id: int,
     patient_in: schemas.PatientUpdate,
-    current_user: User = Depends(deps.get_current_active_admin),
+    current_user: User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Update a patient.
@@ -76,7 +76,7 @@ def delete_patient(
     *,
     db: Session = Depends(deps.get_db),
     id: int,
-    current_user: User = Depends(deps.get_current_active_admin),
+    current_user: User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Delete a patient.
