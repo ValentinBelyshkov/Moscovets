@@ -52,6 +52,10 @@ def setup_biometry_logging():
     api_logger = logging.getLogger("app.api.v1.api")
     api_logger.setLevel(logging.DEBUG)  # Изменяем на DEBUG для более подробного вывода в консоль
     
+    # Создаем логгер для middleware
+    middleware_logger = logging.getLogger("app.middleware.logging")
+    middleware_logger.setLevel(logging.INFO)
+    
     # Создаем обработчики для консоли
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setLevel(logging.DEBUG)  # Изменяем на DEBUG для более подробного вывода в консоль
@@ -94,6 +98,9 @@ def setup_biometry_logging():
     api_logger.addHandler(console_handler)
     api_logger.addHandler(modeling_file_handler)
     
+    middleware_logger.addHandler(console_handler)
+    middleware_logger.addHandler(biometry_file_handler)
+    
     # Предотвращаем дублирование логов в родительских логгерах
     biometry_logger.propagate = False
     storage_logger.propagate = False
@@ -103,12 +110,14 @@ def setup_biometry_logging():
     assimp_logger.propagate = False
     crud_logger.propagate = False
     api_logger.propagate = False
+    middleware_logger.propagate = False
     
     # Логируем успешную настройку
     biometry_logger.info("Логирование модуля биометрии настроено успешно")
     modeling_logger.info("Логирование модуля моделирования настроено успешно")
     biometry_api_logger.info("Логирование API биометрии настроено успешно")
     biometry_crud_logger.info("Логирование CRUD биометрии настроено успешно")
+    middleware_logger.info("Логирование middleware настроено успешно")
 
 def get_biometry_logger(name: str):
     """Получение логгера для модуля биометрии"""

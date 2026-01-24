@@ -1,7 +1,8 @@
 import axios from "axios";
 import type { MapPoint, ModelPoint, ObjUploadResponse, Pair, StatusResponse } from "../types";
 
-const apiBase = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
+// Define the API base URL using the environment variable
+const apiBase = (process.env.REACT_APP_URL_API || "http://localhost:8000") as string;
 
 const client = axios.create({
   baseURL: apiBase,

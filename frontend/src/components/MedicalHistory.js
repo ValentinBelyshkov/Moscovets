@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 // Определяем API_BASE_URL локально или используем значение по умолчанию
-const API_BASE_URL = process.env.REACT_APP_API_URL || '/api/v1';
+const API_BASE_URL = process.env.REACT_APP_URL_API || '/api/v1';
 
 const MedicalHistory = ({ patientId }) => {
   const [medicalHistory, setMedicalHistory] = useState([]);

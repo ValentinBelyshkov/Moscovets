@@ -1,7 +1,9 @@
 // Сервис для работы с пациентами через API
+const API_BASE_URL = process.env.REACT_APP_URL_API || 'http://localhost:8000';
+
 class PatientService {
   constructor() {
-    this.baseUrl = '/api/v1/patients';
+    this.baseUrl = `${API_BASE_URL}/api/v1/patients`;
   }
 
   // Получение заголовков с авторизацией

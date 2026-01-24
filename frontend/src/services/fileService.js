@@ -1,7 +1,9 @@
 // Сервис для работы с файлами через API
+const API_BASE_URL = process.env.REACT_APP_URL_API || 'http://localhost:8000';
+
 class FileService {
   constructor() {
-    this.baseUrl = '/api/v1/files';
+    this.baseUrl = `${API_BASE_URL}/api/v1/files`;
   }
 
   // Загрузка файла

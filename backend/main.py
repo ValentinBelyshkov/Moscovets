@@ -14,6 +14,7 @@ from app.api.v1 import api_router
 from app.core.config import settings
 from app.db.init_db import init_db
 from app.logging_config import setup_biometry_logging
+from app.middleware.logging_middleware import LoggingMiddleware
 
 # Настройка базового логирования
 import os
@@ -60,6 +61,9 @@ app = FastAPI(
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
     lifespan=lifespan
 )
+
+# Добавляем middleware для логирования запросов
+app.add_middleware(LoggingMiddleware)
 
 logger.info("FastAPI application starting...")
 
