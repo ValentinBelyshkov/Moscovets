@@ -16,7 +16,8 @@ class ModelingStatus(PyEnum):
 class ThreeDModel(BaseModel3D):
     __tablename__ = "three_d_models"
     
-    modeling_session = relationship("ModelingSession", back_populates="model", uselist=False)
+    # Remove the ambiguous relationship definition to prevent SQLAlchemy error
+    # The relationship with ModelingSession is handled through foreign keys in ModelingSession
 
 class ModelingSession(Base):
     __tablename__ = "modeling_sessions"
@@ -56,8 +57,9 @@ class ModelingSession(Base):
     bite2 = relationship("ThreeDModel", foreign_keys=[bite2_id])
     occlusion_pad = relationship("ThreeDModel", foreign_keys=[occlusion_pad_id])
     
-    # Обратная связь для модели
-    model = relationship("ThreeDModel", back_populates="modeling_session", foreign_keys=[ThreeDModel.id])
+    # Remove the ambiguous relationship definition
+    # Each 3D model is linked via specific foreign key columns (upper_jaw_id, lower_jaw_id, etc.)
+    # Rather than having a generic model relationship which causes ambiguity
 
 # Add relationships to Patient model - this was moved to patient.py to avoid circular imports
 pass

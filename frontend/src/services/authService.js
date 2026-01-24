@@ -62,6 +62,54 @@ class AuthService {
     }
   }
 
+  // Регистрация нового пользователя
+  async register(userData) {
+    try {
+      console.log('Attempting registration via API for user:', userData.username);
+      
+      const response = await fetch(`${this.baseUrl}/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: userData.username,
+          email: userData.email,
+          full_name: userData.fullName,
+          password: userData.password
+        })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Registration error response:', errorData);
+        console.error('Response status:', response.status);
+        
+        let errorMessage = 'Ошибка при регистрации пользователя';
+        if (errorData.detail) {
+          errorMessage = errorData.detail;
+        }
+        
+        throw new Error(errorMessage);
+      }
+      
+      const result = await response.json();
+      console.log('Registration successful:', result);
+      return result;
+    } catch (error) {
+      console.error('Error during registration:', error);
+      
+      // Provide more specific error messages
+      if (error.name === 'AbortError') {
+        throw new Error('Превышено время ожидания ответа от сервера. Проверьте, что сервер запущен и доступен.');
+      } else if (error instanceof TypeError && error.message.includes('fetch')) {
+        throw new Error('Не удалось подключиться к серверу. Проверьте, что сервер запущен и доступен. ' + error.message);
+      }
+      
+      throw error;
+    }
+  }
+
   // Сохранение токена в localStorage
   saveToken(token) {
     localStorage.setItem('token', token);

@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 // Используем локальные сервисы вместо серверных
 import localFileService from '../services/localFileService';
 import localMedicalRecordService from '../services/localMedicalRecordService';
@@ -15,6 +16,8 @@ import './CephalometryModule.css';
 
 
 const CephalometryModule = () => {
+  const navigate = useNavigate();
+  
   // State for cephalometry data
   const [cephalometryData, setCephalometryData] = useState({
     patientName: 'John Doe',
@@ -1529,7 +1532,6 @@ const CephalometryModule = () => {
   };
 
 
-
   // Generate report
   const generateReport = () => {
     const measurements = calculateMeasurements();
@@ -1852,7 +1854,7 @@ const CephalometryModule = () => {
       return () => clearTimeout(timer);
     }
   }, [nextPointToPlace]);
-  
+
   // Handle window resize
   useEffect(() => {
     const handleResize = () => {
@@ -1875,7 +1877,7 @@ const CephalometryModule = () => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, [cephalometryData.images, cephalometryData.projectionType, imagesUploaded]);
-  
+
   // Handle projection type change
   useEffect(() => {
     // When projection type changes, we might need to reset some state
@@ -1897,7 +1899,7 @@ const CephalometryModule = () => {
       img.src = cephalometryData.images[cephalometryData.projectionType];
     }
   }, [cephalometryData.projectionType, imagesUploaded, cephalometryData.images]);
-  
+
   // Function to draw all elements on a canvas context (used for both main canvas and magnifier)
   const drawAllElements = useCallback((ctx, img, canvasWidth, canvasHeight, imageX, imageY, scaledImgWidth, scaledImgHeight, scale) => {
     // Draw image
@@ -1971,115 +1973,115 @@ const CephalometryModule = () => {
         // (уже отображается как ArGoMe, но теперь с другим цветом)
       }
     } else if (cephalometryData.projectionType === 'frontal') {
-          // Draw lines for frontal projection according to document requirements
-          const points = cephalometryData.points;
-          
-          // Function to draw a line between two points
-          const drawLine = (point1Id, point2Id, color = '#00ff00', lineWidth = 2) => {
-            if (points[point1Id] && points[point2Id]) {
-              const point1 = points[point1Id];
-              const point2 = points[point2Id];
-              const x1 = imageX + point1.x * scale;
-              const y1 = imageY + point1.y * scale;
-              const x2 = imageX + point2.x * scale;
-              const y2 = imageY + point2.y * scale;
-              
-              ctx.beginPath();
-              ctx.moveTo(x1, y1);
-              ctx.lineTo(x2, y2);
-              ctx.strokeStyle = color;
-              ctx.lineWidth = lineWidth;
-              ctx.stroke();
-            }
-          };
-          
-          // Основные линии на прямой ТРГ:
-          // Центральная линия
-          if (showPlanes.nsl && points['N'] && points['Me']) {
-            drawLine('N', 'Me', '#0000ff', 2);
+        // Draw lines for frontal projection according to document requirements
+        const points = cephalometryData.points;
+        
+        // Function to draw a line between two points
+        const drawLine = (point1Id, point2Id, color = '#00ff00', lineWidth = 2) => {
+          if (points[point1Id] && points[point2Id]) {
+            const point1 = points[point1Id];
+            const point2 = points[point2Id];
+            const x1 = imageX + point1.x * scale;
+            const y1 = imageY + point1.y * scale;
+            const x2 = imageX + point2.x * scale;
+            const y2 = imageY + point2.y * scale;
+            
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = lineWidth;
+            ctx.stroke();
           }
-          
-          // SO-SO (Interorbital line)
-          if (showPlanes.fh && points['SO_L'] && points['SO_R']) {
-            drawLine('SO_L', 'SO_R', '#0000ff', 2);
-          }
-          
-          // Z-Z (Zygomatic line)
-          if (showPlanes.nl && points['Z_L'] && points['Z_R']) {
-            drawLine('Z_L', 'Z_R', '#0000ff', 2);
-          }
-          
-          // Co-Co (Condylion line)
-          if (showPlanes.ocp && points['Co_L'] && points['Co_R']) {
-            drawLine('Co_L', 'Co_R', '#0000ff', 2);
-          }
-          
-          // NC-NC (Nasal cavity line)
-          if (showPlanes.ml && points['NC_L'] && points['NC_R']) {
-            drawLine('NC_L', 'NC_R', '#0000ff', 2);
-          }
-          
-          // J-J (Maxillary apical base width)
-          if (showPlanes.goAr && points['J_L'] && points['J_R']) {
-            drawLine('J_L', 'J_R', '#0000ff', 2);
-          }
-          
-          // U6-U6 (Upper dental arch width)
-          if (showPlanes.ml && points['U6_L'] && points['U6_R']) {
-            drawLine('U6_L', 'U6_R', '#0000ff', 2);
-          }
-          
-          // L6-L6 (Lower dental arch width)
-          if (showPlanes.goAr && points['L6_L'] && points['L6_R']) {
-            drawLine('L6_L', 'L6_R', '#0000ff', 2);
-          }
-          
-          // Ag-Ag (Mandibular apical base width)
-          if (showPlanes.ocp && points['Ag_L'] && points['Ag_R']) {
-            drawLine('Ag_L', 'Ag_R', '#0000ff', 2);
-          }
-          
-          // A-U1
-          if (showPlanes.nl && points['A'] && points['U1_L']) {
-            drawLine('A', 'U1_L', '#0000ff', 2);
-          }
-          
-          // B-L1
-          if (showPlanes.fh && points['B'] && points['L1_L']) {
-            drawLine('B', 'L1_L', '#0000ff', 2);
-          }
-          
-          // Co-Go (L,P) left/right (Ramus length)
-          if (showPlanes.nsl && points['Co_L'] && points['Go_L']) {
-            drawLine('Co_L', 'Go_L', '#0000ff', 2);
-          }
-          if (showPlanes.nsl && points['Co_R'] && points['Go_R']) {
-            drawLine('Co_R', 'Go_R', '#0000ff', 2);
-          }
-          
-          // Go-Me (L,P) left/right (Body length)
-          if (showPlanes.ml && points['Go_L'] && points['Me']) {
-            drawLine('Go_L', 'Me', '#0000ff', 2);
-          }
-          if (showPlanes.ml && points['Go_R'] && points['Me']) {
-            drawLine('Go_R', 'Me', '#0000ff', 2);
-          }
-          
-          // ArGoMe left/right
-          if ((showAngles.sna || showAngles.snb) && points['Ar_L'] && points['Go_L'] && points['Me']) {
-            // Draw triangle Ar_L-Go_L-Me
-            drawLine('Ar_L', 'Go_L', '#0000ff', 1);
-            drawLine('Go_L', 'Me', '#0000ff', 1);
-            drawLine('Ar_L', 'Me', '#0000ff', 1);
-          }
-          if ((showAngles.sna || showAngles.snb) && points['Ar_R'] && points['Go_R'] && points['Me']) {
-            // Draw triangle Ar_R-Go_R-Me
-            drawLine('Ar_R', 'Go_R', '#0000ff', 1);
-            drawLine('Go_R', 'Me', '#0000ff', 1);
-            drawLine('Ar_R', 'Me', '#0000ff', 1);
-          }
+        };
+        
+        // Основные линии на прямой ТРГ:
+        // Центральная линия
+        if (showPlanes.nsl && points['N'] && points['Me']) {
+          drawLine('N', 'Me', '#0000ff', 2);
         }
-    
+        
+        // SO-SO (Interorbital line)
+        if (showPlanes.fh && points['SO_L'] && points['SO_R']) {
+          drawLine('SO_L', 'SO_R', '#0000ff', 2);
+        }
+        
+        // Z-Z (Zygomatic line)
+        if (showPlanes.nl && points['Z_L'] && points['Z_R']) {
+          drawLine('Z_L', 'Z_R', '#0000ff', 2);
+        }
+        
+        // Co-Co (Condylion line)
+        if (showPlanes.ocp && points['Co_L'] && points['Co_R']) {
+          drawLine('Co_L', 'Co_R', '#0000ff', 2);
+        }
+        
+        // NC-NC (Nasal cavity line)
+        if (showPlanes.ml && points['NC_L'] && points['NC_R']) {
+          drawLine('NC_L', 'NC_R', '#0000ff', 2);
+        }
+        
+        // J-J (Maxillary apical base width)
+        if (showPlanes.goAr && points['J_L'] && points['J_R']) {
+          drawLine('J_L', 'J_R', '#0000ff', 2);
+        }
+        
+        // U6-U6 (Upper dental arch width)
+        if (showPlanes.ml && points['U6_L'] && points['U6_R']) {
+          drawLine('U6_L', 'U6_R', '#0000ff', 2);
+        }
+        
+        // L6-L6 (Lower dental arch width)
+        if (showPlanes.goAr && points['L6_L'] && points['L6_R']) {
+          drawLine('L6_L', 'L6_R', '#0000ff', 2);
+        }
+        
+        // Ag-Ag (Mandibular apical base width)
+        if (showPlanes.ocp && points['Ag_L'] && points['Ag_R']) {
+          drawLine('Ag_L', 'Ag_R', '#0000ff', 2);
+        }
+        
+        // A-U1
+        if (showPlanes.nl && points['A'] && points['U1_L']) {
+          drawLine('A', 'U1_L', '#0000ff', 2);
+        }
+        
+        // B-L1
+        if (showPlanes.fh && points['B'] && points['L1_L']) {
+          drawLine('B', 'L1_L', '#0000ff', 2);
+        }
+        
+        // Co-Go (L,P) left/right (Ramus length)
+        if (showPlanes.nsl && points['Co_L'] && points['Go_L']) {
+          drawLine('Co_L', 'Go_L', '#0000ff', 2);
+        }
+        if (showPlanes.nsl && points['Co_R'] && points['Go_R']) {
+          drawLine('Co_R', 'Go_R', '#0000ff', 2);
+        }
+        
+        // Go-Me (L,P) left/right (Body length)
+        if (showPlanes.ml && points['Go_L'] && points['Me']) {
+          drawLine('Go_L', 'Me', '#0000ff', 2);
+        }
+        if (showPlanes.ml && points['Go_R'] && points['Me']) {
+          drawLine('Go_R', 'Me', '#0000ff', 2);
+        }
+        
+        // ArGoMe left/right
+        if ((showAngles.sna || showAngles.snb) && points['Ar_L'] && points['Go_L'] && points['Me']) {
+          // Draw triangle Ar_L-Go_L-Me
+          drawLine('Ar_L', 'Go_L', '#0000ff', 1);
+          drawLine('Go_L', 'Me', '#0000ff', 1);
+          drawLine('Ar_L', 'Me', '#0000ff', 1);
+        }
+        if ((showAngles.sna || showAngles.snb) && points['Ar_R'] && points['Go_R'] && points['Me']) {
+          // Draw triangle Ar_R-Go_R-Me
+          drawLine('Ar_R', 'Go_R', '#0000ff', 1);
+          drawLine('Go_R', 'Me', '#0000ff', 1);
+          drawLine('Ar_R', 'Me', '#0000ff', 1);
+        }
+      }
+
     // Draw points (scaled to image position)
     Object.entries(cephalometryData.points || {}).forEach(([id, point]) => {
       // Adjust point coordinates based on image scaling
@@ -2099,7 +2101,7 @@ const CephalometryModule = () => {
       ctx.font = 'bold 14px Arial';
       ctx.fillText(id, adjustedX + 12, adjustedY - 12);
     });
-    
+
     // Draw scale points if in scale setting mode
     if (activeTool === 'scale') {
       if (cephalometryData.projectionType === 'lateral') {
@@ -2337,9 +2339,6 @@ const CephalometryModule = () => {
         const normVec1 = { x: vec1.x / len1, y: vec1.y / len1 };
         const normVec2 = { x: vec2.x / len2, y: vec2.y / len2 };
         
-        // Calculate radius for arc (15% of shorter vector length)
-        const radius = Math.min(len1, len2) * 0.15;
-        
         // Calculate cross product to determine the direction
         const crossProduct = normVec1.x * normVec2.y - normVec1.y * normVec2.x;
         
@@ -2559,16 +2558,16 @@ const CephalometryModule = () => {
       if (showAngles.nlMl) drawAngle('ANS', 'PNS', 'Go', '#0000ff', 2);
       if (showAngles.gonialAngle) drawAngle('Ar', 'Go', 'Me', '#ff0000', 2);
     } else if (cephalometryData.projectionType === 'frontal') {
-          // Draw angle visualizations for frontal projection
-          // Note: Frontal projection has fewer angle visualizations defined in the requirements
-          // We'll visualize the ArGoMe angles if points are available
-          if (showAngles.sna && cephalometryData.points['Ar_L'] && cephalometryData.points['Go_L'] && cephalometryData.points['Me']) {
-            drawAngle('Ar_L', 'Go_L', 'Me', '#0000ff', 1);
-          }
-          if (showAngles.snb && cephalometryData.points['Ar_R'] && cephalometryData.points['Go_R'] && cephalometryData.points['Me']) {
-            drawAngle('Ar_R', 'Go_R', 'Me', '#0000ff', 1);
-          }
+        // Draw angle visualizations for frontal projection
+        // Note: Frontal projection has fewer angle visualizations defined in the requirements
+        // We'll visualize the ArGoMe angles if points are available
+        if (showAngles.sna && cephalometryData.points['Ar_L'] && cephalometryData.points['Go_L'] && cephalometryData.points['Me']) {
+          drawAngle('Ar_L', 'Go_L', 'Me', '#0000ff', 1);
         }
+        if (showAngles.snb && cephalometryData.points['Ar_R'] && cephalometryData.points['Go_R'] && cephalometryData.points['Me']) {
+          drawAngle('Ar_R', 'Go_R', 'Me', '#0000ff', 1);
+        }
+      }
   }, [cephalometryData, selectedPoint, showPlanes, showAngles, activeTool]);
   
   // Draw points and measurements on canvas
@@ -2755,7 +2754,7 @@ const CephalometryModule = () => {
                       // If it's already a URL, use it directly
                       newImages.profile45 = photos.profile45;
                     } else if (typeof photos.profile45 === 'string') {
-                      // If it's a data URL or other string, use it непосредственно
+                      // If it's a data URL or other string, use it directly
                       newImages.profile45 = photos.profile45;
                     } else if (photos.profile45 && photos.profile45.data_url) {
                       // If it's an uploaded file object with data_url property
@@ -3485,14 +3484,6 @@ const CephalometryModule = () => {
                                                                 <label>
                                                                   <input
                                                                     type="checkbox"
-                                                                    checked={showPlanes.gonialAngle}
-                                                                    onChange={(e) => setShowPlanes(prev => ({ ...prev, gonialAngle: e.target.checked }))}
-                                                                  />
-                                                                  Гониальный угол (касательные к ветви и телу нижней челюсти)
-                                                                </label>
-                                                                <label>
-                                                                  <input
-                                                                    type="checkbox"
                                                                     checked={showPlanes.ml}
                                                                     onChange={(e) => setShowPlanes(prev => ({ ...prev, ml: e.target.checked }))}
                                                                   />
@@ -3750,7 +3741,7 @@ const CephalometryModule = () => {
                 <div className="medical-card-link">
                   <p>Данные сохранены! Перейти в медицинскую карту:</p>
                   <button 
-                    onClick={() => window.location.hash = '#medical-card'}
+                    onClick={() => navigate('/medical-card')}
                     className="btn-success"
                   >
                     📋 Открыть медицинскую карту

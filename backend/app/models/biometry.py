@@ -28,6 +28,9 @@ class BiometryModel(BaseModel3D):
     
     # Статус обработки
     status = Column(Enum(BiometryStatus, name="biometry_status"), default=BiometryStatus.UPLOADED)
+    
+    # Relationship to BiometrySession - this should match the back_populates in BiometrySession
+    session = relationship("BiometrySession", back_populates="model")
 
 class BiometrySession(Base):
     __tablename__ = "biometry_sessions"

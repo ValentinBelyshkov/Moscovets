@@ -55,4 +55,12 @@ class BaseModel3D(Base):
     
     @declared_attr
     def patient(cls):
-        return relationship("Patient", back_populates="three_d_models")
+        # Dynamically determine the back_populates attribute based on the class name
+        if cls.__name__ == "ThreeDModel":
+            back_populates_name = "three_d_models"
+        elif cls.__name__ == "BiometryModel":
+            back_populates_name = "biometry_models"
+        else:
+            # Default or for other potential subclasses
+            back_populates_name = "three_d_models"
+        return relationship("Patient", back_populates=back_populates_name)

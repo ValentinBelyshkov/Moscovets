@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ModuleDataService } from '../services/ModuleDataService';
 import { useData } from '../contexts/DataContext';
 import ModuleDataViewer from './ModuleDataViewer';
 
-const MedicalCard = ({ patient }) => {
+const MedicalCard = ({ patient, onBack }) => {
   const [medicalData, setMedicalData] = useState(null);
   const [orthodonticData, setOrthodonticData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -67,6 +68,7 @@ const MedicalCard = ({ patient }) => {
   } = useData();
   
   const hasLoadedRef = useRef(false);
+  const navigate = useNavigate();
 
   // Структура медицинской карты согласно ТЗ и образцу
   const getFallbackData = useCallback((patient) => ({
@@ -1988,7 +1990,7 @@ const MedicalCard = ({ patient }) => {
                   <button
                     className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition duration-300"
                     onClick={() => {
-                      window.location.hash = '#photometry';
+                      navigate('/photometry');
                     }}
                   >
                     📷 Перейти в модуль фотометрии
@@ -2259,10 +2261,7 @@ const MedicalCard = ({ patient }) => {
             className="bg-gradient-to-r from-purple-600 to-indigo-700 hover:from-purple-700 hover:to-indigo-800 text-white px-4 py-2 rounded-lg transition duration-300 flex items-center gap-2"
             onClick={() => {
               // Переход к модулю фотометрии
-              window.location.hash = '#photometry';
-              setTimeout(() => {
-                alert('Перейдите в модуль фотометрии для выполнения новых измерений');
-              }, 100);
+              navigate('/photometry');
             }}
           >
             <span>📷</span> Выполнить новый фотометрический анализ
@@ -2535,7 +2534,7 @@ const MedicalCard = ({ patient }) => {
                   <button
                     className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg transition duration-300"
                     onClick={() => {
-                      window.location.hash = '#biometry';
+                      navigate('/biometry');
                     }}
                   >
                     📏 Перейти в модуль биометрии
@@ -2719,10 +2718,7 @@ const MedicalCard = ({ patient }) => {
             className="bg-gradient-to-r from-amber-600 to-orange-700 hover:from-amber-700 hover:to-orange-800 text-white px-4 py-2 rounded-lg transition duration-300 flex items-center gap-2"
             onClick={() => {
               // Переход к модулю биометрии
-              window.location.hash = '#biometry';
-              setTimeout(() => {
-                alert('Перейдите в модуль биометрии для выполнения новых измерений');
-              }, 100);
+              navigate('/biometry');
             }}
           >
             <span>📏</span> Выполнить новый биометрический анализ
@@ -2844,7 +2840,7 @@ const MedicalCard = ({ patient }) => {
                   <button
                     className="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg transition duration-300"
                     onClick={() => {
-                      window.location.hash = '#cephalometry';
+                      navigate('/cephalometry');
                     }}
                   >
                     🦴 Перейти в модуль цефалометрии
@@ -2995,10 +2991,7 @@ const MedicalCard = ({ patient }) => {
             className="bg-gradient-to-r from-cyan-600 to-blue-700 hover:from-cyan-700 hover:to-blue-800 text-white px-4 py-2 rounded-lg transition duration-300 flex items-center gap-2"
             onClick={() => {
               // Переход к модулю цефалометрии
-              window.location.hash = '#cephalometry';
-              setTimeout(() => {
-                alert('Перейдите в модуль цефалометрии для выполнения анализа');
-              }, 100);
+              navigate('/cephalometry');
             }}
           >
             <span>🦴</span> Выполнить новый цефалометрический анализ
@@ -3120,7 +3113,7 @@ const MedicalCard = ({ patient }) => {
                   <button 
                     className="btn-primary"
                     onClick={() => {
-                      window.location.hash = '#modeling';
+                      navigate('/modeling');
                     }}
                   >
                     🖥️ Перейти в модуль 3D моделирования
@@ -3177,10 +3170,7 @@ const MedicalCard = ({ patient }) => {
             className="btn-primary"
             onClick={() => {
               // Переход к модулю моделирования
-              window.location.hash = '#modeling';
-              setTimeout(() => {
-                alert('Перейдите в модуль 3D моделирования');
-              }, 100);
+              navigate('/modeling');
             }}
           >
             🖥️ Создать новые 3D модели
@@ -3255,7 +3245,7 @@ const MedicalCard = ({ patient }) => {
                   <button
                     className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition duration-300"
                     onClick={() => {
-                      window.location.hash = '#ct';
+                      navigate('/ct');
                     }}
                   >
                     🖥️ Перейти в модуль КТ анализа
@@ -3363,10 +3353,7 @@ const MedicalCard = ({ patient }) => {
             className="bg-gradient-to-r from-purple-600 to-indigo-700 hover:from-purple-700 hover:to-indigo-800 text-white px-4 py-2 rounded-lg transition duration-300 flex items-center gap-2"
             onClick={() => {
               // Переход к модулю КТ
-              window.location.hash = '#ct';
-              setTimeout(() => {
-                alert('Перейдите в модуль КТ анализа');
-              }, 100);
+              navigate('/ct');
             }}
           >
             <span>🖥️</span> Загрузить новые КТ снимки
@@ -3726,7 +3713,7 @@ const MedicalCard = ({ patient }) => {
     
     alert('Данные для презентации экспортированы в JSON файл');
     
-    window.location.hash = '#presentation-generator';
+    navigate('/presentation-generator');
   };
 
   if (loading) {
@@ -3906,10 +3893,7 @@ const MedicalCard = ({ patient }) => {
                   <button 
                     className="btn-secondary"
                     onClick={() => {
-                      window.location.hash = '#modules';
-                      setTimeout(() => {
-                        document.querySelector('.module-navigation')?.scrollIntoView();
-                      }, 100);
+                      navigate('/modules');
                     }}
                   >
                     🔬 Перейти к диагностическим модулям
@@ -4049,10 +4033,7 @@ const MedicalCard = ({ patient }) => {
         <button
           className="bg-gradient-to-r from-amber-600 to-orange-700 hover:from-amber-700 hover:to-orange-800 text-white px-4 py-3 rounded-lg transition duration-300 flex items-center justify-center gap-2"
           onClick={() => {
-            window.location.hash = '#modules';
-            setTimeout(() => {
-              document.querySelector('.module-navigation')?.scrollIntoView();
-            }, 100);
+            navigate('/modules');
           }}
         >
           <span>🔬</span> Перейти к диагностическим модулям

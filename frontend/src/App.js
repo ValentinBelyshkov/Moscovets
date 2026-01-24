@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import PatientDirectory from './components/PatientDirectory';
@@ -29,11 +30,140 @@ import './components/ModelingModule.css';
 // Глобальная настройка для API запросов
 export const API_BASE_URL = '/api/v1';
 
+// Компонент для проверки аутентификации
+function ProtectedRoute({ isLoggedIn, children }) {
+  return isLoggedIn ? children : <Navigate to="/login" />;
+}
+
+// Компонент для обертывания логики аутентификации
+function AuthWrapper({ onLogin, onLogout, isLoggedIn, user }) {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    // Удаляем токен при выходе
+    localStorage.removeItem('token');
+    onLogout();
+    navigate('/login');
+  };
+
+  // Проверяем, нужна ли аутентификация для текущего пути
+  const isAuthRequired = !['/login'].includes(location.pathname);
+
+  // Если пользователь не авторизован, но пытается зайти на защищенный маршрут
+  if (isAuthRequired && !isLoggedIn) {
+    return <Navigate to="/login" />;
+  }
+
+  // Если пользователь авторизован и находится на странице входа, направляем его на главную
+  if (isLoggedIn && location.pathname === '/login') {
+    return <Navigate to="/patients" />;
+  }
+
+  return (
+    <div className="flex flex-col min-h-screen bg-gray-50">
+      <header className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-4 shadow-lg flex items-center justify-between flex-wrap gap-4 md:gap-0">
+        <div className="flex items-center space-x-4">
+          <h1 className="text-xl md:text-2xl font-bold m-0">Moskovets 3D</h1>
+          <p className="m-0">Добро пожаловать, {user?.username}!</p>
+        </div>
+        
+        <div className="flex flex-wrap gap-2">
+          {location.pathname !== '/patients' && location.pathname !== '/medical-card' && (
+            <button
+              onClick={() => navigate('/patients')}
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all duration-300 text-sm font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+            >
+              Назад к списку пациентов
+            </button>
+          )}
+          
+          {location.pathname === '/medical-card' && (
+            <button
+              onClick={() => navigate('/patients')}
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all duration-300 text-sm font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+            >
+              Назад к списку пациентов
+            </button>
+          )}
+          
+          <button
+            onClick={handleLogout}
+            className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all duration-300 text-sm font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+          >
+            Выйти
+          </button>
+        </div>
+      </header>
+      
+      {/* Основной контент приложения */}
+      <main className="flex-grow p-4 md:p-6 bg-gray-50">
+        <Routes>
+          <Route path="/" element={<Navigate to="/patients" />} />
+          <Route path="/dashboard" element={<Dashboard user={user} />} />
+          <Route path="/patients" element={<PatientDirectory />} />
+          <Route path="/medical-card/:id" element={<MedicalCardWithPatient />} />
+          <Route path="/medical-card" element={<MedicalCardWithPatient />} />
+          <Route path="/file-library" element={<FileLibrary />} />
+          <Route path="/presentation-generator" element={<PresentationGenerator />} />
+          <Route path="/medical-card-generator" element={<MedicalCardGenerator />} />
+          <Route path="/cephalometry" element={<CephalometryModule />} />
+          <Route path="/photometry" element={<PhotometryModule />} />
+          <Route path="/ct" element={<CTModule />} />
+          <Route path="/biometry" element={<BiometryModule />} />
+          <Route path="/modeling" element={<ModelingModule />} />
+          <Route path="/file-transfer-demo" element={<FileTransferDemo />} />
+        </Routes>
+      </main>
+      
+      {/* Простой футер */}
+      <footer className="bg-gradient-to-r from-gray-800 to-gray-900 text-white p-4 text-center text-sm shadow-inner">
+        <p>© 2024 Moskovets 3D. Все права защищены.</p>
+        <p className="text-xs text-gray-400 mt-2">Версия: 1.0.0</p>
+      </footer>
+    </div>
+  );
+}
+
+// Компонент для передачи данных пациента в MedicalCard
+function MedicalCardWithPatient() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  
+  // Извлекаем данные пациента из состояния или параметров
+  const [selectedPatient, setSelectedPatient] = useState(null);
+  
+  useEffect(() => {
+    // Получаем данные пациента из состояния навигации или из sessionStorage
+    const state = location.state;
+    if (state && state.patient) {
+      setSelectedPatient(state.patient);
+    } else {
+      // Если нет данных в состоянии, можно попытаться получить их другим способом
+      // Например, если ID пациента передается как параметр URL
+      if (location.pathname.includes('/medical-card/') && location.pathname.split('/')[2]) {
+        // Здесь можно выполнить запрос к API для получения данных пациента по ID
+        // Но пока просто покажем сообщение
+        console.warn('Patient ID found in URL but patient data needs to be loaded from API');
+      }
+    }
+  }, [location]);
+
+  const handleBackToPatientDirectory = () => {
+    navigate('/patients');
+  };
+
+  return (
+    <MedicalCard 
+      patient={selectedPatient} 
+      onBack={handleBackToPatientDirectory}
+    />
+  );
+}
+
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
-  const [currentView, setCurrentView] = useState('patient-directory');
-  const [selectedPatient, setSelectedPatient] = useState(null);
   const [initialLoad, setInitialLoad] = useState(true);
 
   // Проверка токена при запуске приложения
@@ -65,67 +195,6 @@ function App() {
     localStorage.removeItem('token');
     setIsLoggedIn(false);
     setUser(null);
-    setCurrentView('dashboard');
-    setSelectedPatient(null);
-  };
-
-  const handleViewMedicalCard = (patient) => {
-    setSelectedPatient(patient);
-    setCurrentView('medical-card');
-  };
-
-  // Обработка навигации на основе хэша
-  useEffect(() => {
-    const handleHashChange = () => {
-      const hash = window.location.hash.substring(1);
-      let view = 'patient-directory';
-      
-      // Сопоставление хэшей с видами
-      const hashMap = {
-        'dashboard': 'dashboard',
-        'patient-directory': 'patient-directory',
-        'file-library': 'file-library',
-        'presentation-generator': 'presentation-generator',
-        'medical-card-generator': 'medical-card-generator',
-        'cephalometry': 'cephalometry',
-        'photometry': 'photometry',
-        'ct': 'ct',
-        'biometry': 'biometry',
-        'modeling': 'modeling',
-        'file-transfer-demo': 'file-transfer-demo'
-      };
-      
-      if (hashMap[hash]) {
-        view = hashMap[hash];
-      }
-      
-      setCurrentView(view);
-      // Сбрасываем выбранного пациента при смене вида (кроме медицинской карты)
-      if (view !== 'medical-card') {
-        setSelectedPatient(null);
-      }
-    };
-
-    window.addEventListener('hashchange', handleHashChange);
-    handleHashChange(); // Начальная проверка
-
-    return () => {
-      window.removeEventListener('hashchange', handleHashChange);
-    };
-  }, []);
-
-  // Обработка нажатия кнопки "Назад"
-  const handleBackToDashboard = () => {
-    window.location.hash = '';
-    setCurrentView('patient-directory');
-    setSelectedPatient(null);
-  };
-
-  // Обработка нажатия кнопки "Назад к списку пациентов"
-  const handleBackToPatientDirectory = () => {
-    window.location.hash = '#patient-directory';
-    setCurrentView('patient-directory');
-    setSelectedPatient(null);
   };
 
   if (initialLoad) {
@@ -137,106 +206,35 @@ function App() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
-      {!isLoggedIn ? (
-        <Login onLogin={handleLogin} />
-      ) : (
-        <DataProvider>
-          <div className="flex flex-col min-h-screen">
-            <header className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-4 shadow-lg flex items-center justify-between flex-wrap gap-4 md:gap-0">
-              <div className="flex items-center space-x-4">
-                <h1 className="text-xl md:text-2xl font-bold m-0">Moskovets 3D</h1>
-                <p className="m-0">Добро пожаловать, {user?.username}!</p>
-              </div>
-              
-              <div className="flex flex-wrap gap-2">
-                {currentView !== 'patient-directory' && currentView !== 'medical-card' && (
-                  <button
-                    onClick={handleBackToDashboard}
-                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all duration-300 text-sm font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-                  >
-                    Назад к списку пациентов
-                  </button>
-                )}
-                
-                {currentView === 'medical-card' && (
-                  <button
-                    onClick={handleBackToPatientDirectory}
-                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all duration-300 text-sm font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-                  >
-                    Назад к списку пациентов
-                  </button>
-                )}
-                
-                <button
-                  onClick={handleLogout}
-                  className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all duration-300 text-sm font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-                >
-                  Выйти
-                </button>
-              </div>
-            </header>
-            
-            {/* Основной контент приложения */}
-            <main className="flex-grow p-4 md:p-6 bg-gray-50">
-              {currentView === 'dashboard' && (
-                <Dashboard user={user} />
-              )}
-              
-              {currentView === 'patient-directory' && (
-                <PatientDirectory />
-              )}
-              
-              {currentView === 'medical-card' && (
-                <MedicalCard patient={selectedPatient} />
-              )}
-              
-              {currentView === 'file-library' && (
-                <FileLibrary />
-              )}
-              
-              {currentView === 'presentation-generator' && (
-                <PresentationGenerator />
-              )}
-              
-              {currentView === 'medical-card-generator' && (
-                <MedicalCardGenerator />
-              )}
-              
-              {currentView === 'cephalometry' && (
-                <CephalometryModule />
-              )}
-              
-              {currentView === 'photometry' && (
-                <PhotometryModule />
-              )}
-              
-              {currentView === 'ct' && (
-                <CTModule />
-              )}
-              
-              {currentView === 'biometry' && (
-                <BiometryModule />
-              )}
-              
-              {currentView === 'modeling' && (
-                <ModelingModule />
-              )}
-              
-              {currentView === 'file-transfer-demo' && (
-                <FileTransferDemo />
-              )}
-            </main>
-            
-            {/* Простой футер */}
-            <footer className="bg-gradient-to-r from-gray-800 to-gray-900 text-white p-4 text-center text-sm shadow-inner">
-              <p>© 2024 Moskovets 3D. Все права защищены.</p>
-              <p className="text-xs text-gray-400 mt-2">Версия: 1.0.0</p>
-            </footer>
-          </div>
-        </DataProvider>
-      )}
-    </div>
+    <Router>
+      <div className="flex flex-col min-h-screen bg-gray-50">
+        <Routes>
+          <Route 
+            path="/login" 
+            element={
+              !isLoggedIn ? 
+                <Login onLogin={handleLogin} /> : 
+                <Navigate to="/patients" />
+            } 
+          />
+          <Route 
+            path="*" 
+            element={
+              <ProtectedRoute isLoggedIn={isLoggedIn}>
+                <DataProvider>
+                  <AuthWrapper 
+                    onLogin={handleLogin} 
+                    onLogout={handleLogout}
+                    isLoggedIn={isLoggedIn}
+                    user={user}
+                  />
+                </DataProvider>
+              </ProtectedRoute>
+            } 
+          />
+        </Routes>
+      </div>
+    </Router>
   );
 }
 
