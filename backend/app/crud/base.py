@@ -29,7 +29,11 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         return db.query(self.model).offset(skip).limit(limit).all()
 
     def create(self, db: Session, *, obj_in: CreateSchemaType) -> ModelType:
-        obj_in_data = jsonable_encoder(obj_in)
+        # Use model_dump() instead of jsonable_encoder to preserve Python types (like date objects)
+        if hasattr(obj_in, 'model_dump'):
+            obj_in_data = obj_in.model_dump()
+        else:
+            obj_in_data = jsonable_encoder(obj_in)
         db_obj = self.model(**obj_in_data)  # type: ignore
         db.add(db_obj)
         db.commit()
@@ -47,7 +51,11 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         if isinstance(obj_in, dict):
             update_data = obj_in
         else:
-            update_data = obj_in.dict(exclude_unset=True)
+            # Use model_dump() if available (Pydantic v2), otherwise dict()
+            if hasattr(obj_in, 'model_dump'):
+                update_data = obj_in.model_dump(exclude_unset=True)
+            else:
+                update_data = obj_in.dict(exclude_unset=True)
         for field in obj_data:
             if field in update_data:
                 setattr(db_obj, field, update_data[field])

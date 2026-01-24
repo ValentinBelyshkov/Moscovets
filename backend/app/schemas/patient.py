@@ -1,7 +1,6 @@
 from datetime import date, datetime
-from typing import Optional
-from pydantic import BaseModel
-from app.schemas import CustomConfig  # Add this line
+from typing import Optional, Union
+from pydantic import BaseModel, ConfigDict, field_validator
 from app.models.patient import Gender
 
 # Shared properties
@@ -10,6 +9,13 @@ class PatientBase(BaseModel):
     birth_date: date
     gender: Gender
     contact_info: Optional[str] = None
+    
+    @field_validator('birth_date', mode='before')
+    @classmethod
+    def parse_birth_date(cls, value):
+        if isinstance(value, str):
+            return datetime.strptime(value, '%Y-%m-%d').date()
+        return value
 
 # Properties to receive via API on creation
 class PatientCreate(PatientBase):
@@ -21,11 +27,8 @@ class PatientUpdate(PatientBase):
 
 # Properties to return via API
 class Patient(PatientBase):
+    model_config = ConfigDict(from_attributes=True, protected_namespaces=())
+    
     id: int
-    created_at: date
-    updated_at: date
-
-    class Config(CustomConfig):
-        from_attributes = True
-    class Config:
-        from_attributes = True
+    created_at: datetime
+    updated_at: datetime

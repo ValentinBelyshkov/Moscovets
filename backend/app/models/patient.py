@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date, Enum
+from sqlalchemy import Column, Integer, String, Date, DateTime, Enum
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.base import Base
@@ -17,8 +17,8 @@ class Patient(Base):
     birth_date: Date = Column(Date, nullable=False)
     gender: Gender = Column(Enum(Gender, name="gender"), nullable=False)
     contact_info: str = Column(String, nullable=True)
-    created_at = Column(Date, server_default=func.now(), nullable=False)
-    updated_at = Column(Date, server_default=func.now(), onupdate=func.now(), nullable=False)
+    created_at = Column(DateTime, server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now(), nullable=False)
     
     def __init__(self, full_name: str, birth_date: Date, gender: Gender, contact_info: str = ""):
         self.full_name = full_name
