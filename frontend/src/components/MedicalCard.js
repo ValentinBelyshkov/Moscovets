@@ -1,6 +1,7 @@
-// MedicalCard component - refactored version
-// The original component has been split into multiple smaller files for better maintainability
-// Each file is now under 400 lines as per refactoring requirements
+// MedicalCard component - DEPRECATED
+// This component has been replaced by PatientCard
+// All functionality has been migrated to PatientCardRefactored
+// See: /components/patientcard/
 
-// Main refactored component
-export { default } from './medicalCard/MedicalCardRefactored';
+// Re-export from PatientCard for backward compatibility
+export { default } from './PatientCard';
