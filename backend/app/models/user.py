@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Enum, DateTime
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.base import Base
 from enum import Enum as PyEnum
@@ -32,6 +33,6 @@ class User(Base):
         self.hashed_password = hashed_password
         self.role = role
         self.account_status = account_status
-        
-    # Relationships
+    
+    # Relationships - using string reference to avoid circular imports
     created_file_versions = relationship("FileVersion", back_populates="user", foreign_keys="FileVersion.created_by")

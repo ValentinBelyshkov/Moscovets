@@ -59,6 +59,9 @@ export const usePatientCardState = (patientProp) => {
   const [medicalData, setMedicalData] = useState(null);
   const [orthodonticData, setOrthodonticData] = useState(null);
 
+  // Состояние для управления формой загрузки фото
+  const [showPhotoUpload, setShowPhotoUpload] = useState(false);
+
   // Реф для предотвращения повторной загрузки
   const hasLoadedRef = useRef(false);
 
@@ -114,6 +117,10 @@ export const usePatientCardState = (patientProp) => {
     setMedicalData,
     orthodonticData,
     setOrthodonticData,
+
+    // Состояние для управления формой загрузки фото
+    showPhotoUpload,
+    setShowPhotoUpload,
 
     // Реф
     hasLoadedRef

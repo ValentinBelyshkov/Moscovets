@@ -2,6 +2,7 @@ import React, { useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import patientService from '../../services/patientService';
 import { useData } from '../../contexts/DataContext';
+import PhotoUpload from '../PhotoUpload';
 
 // Хуки
 import { usePatientCardState } from './usePatientCardState';
@@ -56,6 +57,8 @@ const PatientCardRefactored = ({ patient: patientProp, onBack }) => {
     setMedicalData,
     orthodonticData,
     setOrthodonticData,
+    showPhotoUpload,
+    setShowPhotoUpload,
     hasLoadedRef
   } = usePatientCardState(patientProp);
 
@@ -438,12 +441,45 @@ const PatientCardRefactored = ({ patient: patientProp, onBack }) => {
                 <p className="text-xs text-gray-500 mt-2 text-center">Фото анфас</p>
               </div>
               
-              <button className="w-full mt-4 py-2 px-4 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">
+              <button
+                onClick={() => setShowPhotoUpload(true)}
+                className="w-full mt-4 py-2 px-4 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+              >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
                 Добавить фото
               </button>
+              
+              {/* Форма загрузки фото */}
+              {showPhotoUpload && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                  <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                    <div className="p-6 border-b border-gray-200">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-xl font-bold text-gray-900">Загрузка фотографий пациента</h3>
+                        <button
+                          onClick={() => setShowPhotoUpload(false)}
+                          className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                        >
+                          <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                    <div className="p-6">
+                      <PhotoUpload
+                        patientId={patient?.id}
+                        onUploadSuccess={() => {
+                          // Optionally reload patient data after successful upload
+                          console.log('Photo upload successful');
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

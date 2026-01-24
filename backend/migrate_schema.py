@@ -14,13 +14,13 @@ from sqlalchemy.orm import sessionmaker
 class DatabaseMigration:
     """Класс для миграции схемы базы данных"""
     
-    def __init__(self, database_url: str = "sqlite:///./patients.db"):
+    def __init__(self, database_url: str = "sqlite:///./moskovets3d.db"):
         self.database_url = database_url
         self.engine = create_engine(database_url)
         
     def create_backup(self) -> str:
         """Создает резервную копию базы данных"""
-        db_path = Path("patients.db")
+        db_path = Path("moskovets3d.db")
         if not db_path.exists():
             print("Файл базы данных не найден")
             return ""
@@ -244,7 +244,7 @@ class DatabaseMigration:
                     results['skipped'].append(step['description'])
                     print(f"  [SKIP] {step['description']}")
                 else:
-                    with sqlite3.connect("patients.db") as conn:
+                    with sqlite3.connect("moskovets3d.db") as conn:
                         conn.execute(step['sql'])
                         conn.commit()
                         results['executed'].append(step['description'])

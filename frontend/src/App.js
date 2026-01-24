@@ -6,6 +6,7 @@ import PatientDirectory from './components/PatientDirectory';
 import PatientCard from './components/PatientCard';
 import FileLibrary from './components/FileLibrary';
 import PresentationGenerator from './components/PresentationGenerator';
+import PatientCardWithPatient from './components/PatientCard'
 import MedicalCardGenerator from './components/MedicalCardGenerator';
 import CephalometryModule from './components/CephalometryModule';
 import PhotometryModule from './components/photometry/PhotometryModuleRefactored';
@@ -152,12 +153,7 @@ function MedicalCardWithPatient() {
     navigate('/patients');
   };
 
-  return (
-    <MedicalCard 
-      patient={selectedPatient} 
-      onBack={handleBackToPatientDirectory}
-    />
-  );
+
 }
 
 function App() {
