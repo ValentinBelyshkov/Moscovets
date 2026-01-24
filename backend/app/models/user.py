@@ -32,3 +32,6 @@ class User(Base):
         self.hashed_password = hashed_password
         self.role = role
         self.account_status = account_status
+        
+    # Relationships
+    created_file_versions = relationship("FileVersion", back_populates="user", foreign_keys="FileVersion.created_by")
