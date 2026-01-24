@@ -1,4 +1,5 @@
 import React, { useEffect, useCallback } from 'react';
+import { usePatientNavigation } from '../../hooks/usePatientNavigation';
 import { useData } from '../../contexts/DataContext';
 import FileLibrary from '../FileLibrary';
 import { usePhotometryState } from './usePhotometryState';
@@ -13,6 +14,9 @@ import PhotometryReport from './PhotometryReport';
 import './PhotometryModule.css';
 
 const PhotometryModuleRefactored = () => {
+  // Обрабатываем навигацию с данными пациента
+  usePatientNavigation();
+  
   // State and handlers
   const state = usePhotometryState();
   const handlers = usePhotometryHandlers(state);

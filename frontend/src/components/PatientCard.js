@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import patientService from '../services/patientService';
 
 const PatientCard = ({ patient: patientProp, onBack }) => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [patient, setPatient] = useState(patientProp || null);
   const [loading, setLoading] = useState(!patientProp && !!id);
   const [activeTab, setActiveTab] = useState('overview');
@@ -206,15 +207,22 @@ const PatientCard = ({ patient: patientProp, onBack }) => {
 
   // Переход к модулю
   const navigateToModule = (moduleId) => {
-    const hashMap = {
-      photometry: '#photometry',
-      cephalometry: '#cephalometry',
-      biometry: '#biometry',
-      modeling: '#modeling',
-      ct: '#ct'
+    const routeMap = {
+      photometry: '/photometry',
+      cephalometry: '/cephalometry', 
+      biometry: '/biometry',
+      modeling: '/modeling',
+      ct: '/ct'
     };
-    if (hashMap[moduleId]) {
-      window.location.hash = hashMap[moduleId];
+    
+    if (routeMap[moduleId]) {
+      // Передаем данные пациента при навигации
+      navigate(routeMap[moduleId], {
+        state: { 
+          patient: patient || patientProp,
+          fromPatientCard: true 
+        }
+      });
     }
   };
 
