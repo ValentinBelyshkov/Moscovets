@@ -404,15 +404,21 @@ const PatientCardRefactored = ({ patient: patientProp, onBack }) => {
 
   // Переход к модулю
   const navigateToModule = (moduleId) => {
-    const hashMap = {
-      photometry: '#photometry',
-      cephalometry: '#cephalometry',
-      biometry: '#biometry',
-      modeling: '#modeling',
-      ct: '#ct'
+    const routeMap = {
+      photometry: '/photometry',
+      cephalometry: '/cephalometry',
+      biometry: '/biometry',
+      modeling: '/modeling',
+      ct: '/ct'
     };
-    if (hashMap[moduleId]) {
-      window.location.hash = hashMap[moduleId];
+    
+    if (routeMap[moduleId]) {
+      navigate(routeMap[moduleId], { 
+        state: { 
+          patient: patient, 
+          fromPatientCard: true 
+        } 
+      });
     }
   };
 
