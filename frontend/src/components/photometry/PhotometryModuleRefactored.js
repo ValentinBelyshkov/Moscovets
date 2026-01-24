@@ -354,6 +354,17 @@ const PhotometryModuleRefactored = () => {
           setShowFileLibrary={setShowFileLibrary}
         />
         
+        <PhotometryPointsList
+          pointDefinitions={pointDefinitions}
+          photometryData={photometryData}
+          nextPointToPlace={nextPointToPlace}
+          selectedPoint={selectedPoint}
+          setSelectedPoint={setSelectedPoint}
+          setSelectedPointImage={setSelectedPointImage}
+          setActiveTool={setActiveTool}
+          selectedPointImage={selectedPointImage}
+        />
+        
         <div className="image-upload">
           <h3>Фотографии</h3>
           <div className="image-container">
@@ -367,38 +378,37 @@ const PhotometryModuleRefactored = () => {
                 onMouseLeave={handleCanvasMouseLeave}
                 onContextMenu={handleCanvasContextMenu}
               />
-              {/* Magnifier and delete button would go here */}
+              {selectedPoint && (
+                <button 
+                  className="delete-point-btn"
+                  onClick={deleteSelectedPoint}
+                  title="Удалить выбранную точку (Delete/Backspace)"
+                >
+                  ✕ Удалить точку
+                </button>
+              )}
             </div>
-            
-            <PhotometryToolbar
-              activeTool={activeTool}
-              setActiveTool={setActiveTool}
-              photometryData={photometryData}
-              setPhotometryData={setPhotometryData}
-              isScaleSet={isScaleSet}
-              magnifierZoom={magnifierZoom}
-            />
-            
-            <PhotometryVisualizationControls
-              photometryData={photometryData}
-              showPlanes={showPlanes}
-              setShowPlanes={setShowPlanes}
-              showAngles={showAngles}
-              setShowAngles={setShowAngles}
-            />
           </div>
         </div>
         
-        <PhotometryPointsList
-          pointDefinitions={pointDefinitions}
-          photometryData={photometryData}
-          nextPointToPlace={nextPointToPlace}
-          selectedPoint={selectedPoint}
-          setSelectedPoint={setSelectedPoint}
-          setSelectedPointImage={setSelectedPointImage}
-          setActiveTool={setActiveTool}
-          selectedPointImage={selectedPointImage}
-        />
+        <div className="toolbar-wrapper">
+          <PhotometryToolbar
+            activeTool={activeTool}
+            setActiveTool={setActiveTool}
+            photometryData={photometryData}
+            setPhotometryData={setPhotometryData}
+            isScaleSet={isScaleSet}
+            magnifierZoom={magnifierZoom}
+          />
+          
+          <PhotometryVisualizationControls
+            photometryData={photometryData}
+            showPlanes={showPlanes}
+            setShowPlanes={setShowPlanes}
+            showAngles={showAngles}
+            setShowAngles={setShowAngles}
+          />
+        </div>
         
         <PhotometryMeasurementsPanel
           photometryData={photometryData}
