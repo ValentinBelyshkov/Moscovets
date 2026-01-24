@@ -61,6 +61,13 @@ def register_user(
             status_code=400,
             detail="The user with this username already exists in the system.",
         )
+
+    user_by_email = crud.user.get_by_email(db, email=email)
+    if user_by_email:
+        raise HTTPException(
+            status_code=400,
+            detail="The user with this email already exists in the system.",
+        )
     
     # Create user with default role and active status
     user_in = schemas.UserCreate(

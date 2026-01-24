@@ -18,15 +18,15 @@ const Login = ({ onLogin }) => {
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
-    
+
     try {
       const loginResponse = await authService.login(username, password);
-      
+
       // Сохраняем токен в localStorage
       authService.saveToken(loginResponse.access_token);
-      
+
       // Вызываем callback с данными пользователя
-      onLogin({ username });
+      onLogin({ username, token: loginResponse.access_token });
     } catch (err) {
       setError(err.message);
     }
@@ -56,7 +56,7 @@ const Login = ({ onLogin }) => {
       setShowRegister(false);
       
       // Optionally log the user in automatically
-      onLogin({ username: regUsername });
+      onLogin({ username: regUsername, token: registerResponse.access_token });
     } catch (err) {
       setRegError(err.message);
     }
