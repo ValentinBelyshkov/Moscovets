@@ -1,10 +1,14 @@
 import React, { useState, useRef } from 'react';
+import { usePatientNavigation } from '../hooks/usePatientNavigation';
 // Используем локальный сервис вместо серверного
 import localMedicalRecordService from '../services/localMedicalRecordService';
 import VTKViewer from './VTKViewer';
 import ArchiveUpload from './ArchiveUpload';
 import './ArchiveUpload.css';
 const CTModule = () => {
+  // Обрабатываем навигацию с данными пациента
+  usePatientNavigation();
+  
   // State for CT data and UI controls
   const [ctData, setCtData] = useState({
     patientName: 'Иванов Иван Иванович',

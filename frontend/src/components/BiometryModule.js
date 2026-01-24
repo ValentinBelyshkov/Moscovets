@@ -1,5 +1,6 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
+import { usePatientNavigation } from '../hooks/usePatientNavigation';
 import BiometryStateProvider from './biometry/BiometryStateProvider';
 import BiometryPointsManager from './biometry/BiometryPointsManager';
 import BiometryCalculationsEngine from './biometry/BiometryCalculationsEngine';
@@ -15,6 +16,9 @@ import {
 import './BiometryModule.css';
 
 const BiometryModule = () => {
+  // Обрабатываем навигацию с данными пациента
+  usePatientNavigation();
+
   return (
     <BiometryStateProvider>
       {({

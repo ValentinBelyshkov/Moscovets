@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { usePatientNavigation } from '../../hooks/usePatientNavigation';
 import { useCephalometryState } from './useCephalometryState';
 import { useCephalometryImageHandlers } from './useCephalometryImageHandlers';
 import { useCephalometryCanvasHandlers } from './useCephalometryCanvasHandlers';
@@ -13,6 +14,9 @@ import CephalometryPhotoSelection from '../CephalometryPhotoSelection';
 import '../CephalometryModule.css';
 
 const CephalometryModuleRefactored = () => {
+  // Обрабатываем навигацию с данными пациента
+  usePatientNavigation();
+  
   const state = useCephalometryState();
   const imageHandlers = useCephalometryImageHandlers(state);
   const canvasHandlers = useCephalometryCanvasHandlers(state);
