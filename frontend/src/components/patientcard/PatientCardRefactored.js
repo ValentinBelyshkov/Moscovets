@@ -10,6 +10,9 @@ import { usePatientCardHandlers } from './usePatientCardHandlers';
 import { usePatientCardDataTransformers } from './usePatientCardDataTransformers';
 import { usePatientCardDataIntegration } from './usePatientCardDataIntegration';
 
+// Компоненты
+import PatientMedicalForm from './PatientMedicalForm';
+
 // Константы
 import { MODULE_TABS } from './PatientCardConstants';
 
@@ -92,23 +95,40 @@ const PatientCardRefactored = ({ patient: patientProp, onBack }) => {
   } = transformers;
 
   // Обработка изменений в форме медицинской карты
-  const handleMedicalCardChange = useCallback((e) => {
-    const { name, value } = e.target;
-    const keys = name.split('.');
-    
-    if (keys.length === 2) {
-      setMedicalCardForm(prev => ({
-        ...prev,
-        [keys[0]]: {
-          ...prev[keys[0]],
-          [keys[1]]: value
-        }
-      }));
+  const handleMedicalCardChange = useCallback((e, fieldPath) => {
+    if (fieldPath) {
+      // Обработка вложенных полей через fieldPath (например, 'registration.city')
+      const keys = fieldPath.split('.');
+      const { value } = e.target;
+      
+      if (keys.length === 2) {
+        setMedicalCardForm(prev => ({
+          ...prev,
+          [keys[0]]: {
+            ...prev[keys[0]],
+            [keys[1]]: value
+          }
+        }));
+      }
     } else {
-      setMedicalCardForm(prev => ({
-        ...prev,
-        [name]: value
-      }));
+      // Обработка обычных полей через name
+      const { name, value } = e.target;
+      const keys = name.split('.');
+      
+      if (keys.length === 2) {
+        setMedicalCardForm(prev => ({
+          ...prev,
+          [keys[0]]: {
+            ...prev[keys[0]],
+            [keys[1]]: value
+          }
+        }));
+      } else {
+        setMedicalCardForm(prev => ({
+          ...prev,
+          [name]: value
+        }));
+      }
     }
   }, [setMedicalCardForm]);
 
@@ -142,19 +162,44 @@ const PatientCardRefactored = ({ patient: patientProp, onBack }) => {
 
   // Обновляем форму при загрузке данных
   useEffect(() => {
-    if (orthodonticData && !isEditingMedicalCard) {
-      setMedicalCardForm({
+    if (patient && !isEditingMedicalCard) {
+      // Populate form with patient data
+      const birthDate = patient?.birth_date || patient?.birthDate;
+      let birthDay = '', birthMonth = '', birthYear = '';
+      
+      if (birthDate) {
+        const date = new Date(birthDate);
+        birthDay = date.getDate().toString();
+        birthMonth = (date.getMonth() + 1).toString();
+        birthYear = date.getFullYear().toString();
+      }
+      
+      setMedicalCardForm(prev => ({
+        ...prev,
+        fullName: patient?.full_name || patient?.fullName || '',
+        gender: patient?.gender || 'female',
+        birthDay,
+        birthMonth,
+        birthYear,
+        registration: {
+          ...prev.registration,
+          phone: patient?.contact_info || patient?.contactInfo || ''
+        },
         faceProfile: {
-          upperLip: orthodonticData.photoAnalysis?.profile?.upperLipPosition === 'правильное' ? 'normal' : 
-                    orthodonticData.photoAnalysis?.profile?.upperLipPosition === 'выступает' ? 'protruding' : 'retracted',
-          lowerLip: orthodonticData.photoAnalysis?.profile?.lowerLipPosition === 'правильное' ? 'normal' :
-                    orthodonticData.photoAnalysis?.profile?.lowerLipPosition === 'выступает' ? 'protruding' : 'retracted',
-          chin: orthodonticData.photoAnalysis?.profile?.chinPosition === 'правильное' ? 'normal' :
-                orthodonticData.photoAnalysis?.profile?.chinPosition === 'выступает' ? 'protruding' : 'retracted',
+          upperLip: orthodonticData?.photoAnalysis?.profile?.upperLipPosition === 'правильное' ? 'normal' : 
+                    orthodonticData?.photoAnalysis?.profile?.upperLipPosition === 'выступает' ? 'protruding' : 
+                    orthodonticData?.photoAnalysis?.profile?.upperLipPosition === 'западает' ? 'retracted' : 'normal',
+          lowerLip: orthodonticData?.photoAnalysis?.profile?.lowerLipPosition === 'правильное' ? 'normal' :
+                    orthodonticData?.photoAnalysis?.profile?.lowerLipPosition === 'выступает' ? 'protruding' : 
+                    orthodonticData?.photoAnalysis?.profile?.lowerLipPosition === 'западает' ? 'retracted' : 'normal',
+          chin: orthodonticData?.photoAnalysis?.profile?.chinPosition === 'правильное' ? 'normal' :
+                orthodonticData?.photoAnalysis?.profile?.chinPosition === 'выступает' ? 'protruding' : 
+                orthodonticData?.photoAnalysis?.profile?.chinPosition === 'западает' ? 'retracted' : 'normal',
+          type: prev.faceProfile.type
         }
-      });
+      }));
     }
-  }, [orthodonticData, isEditingMedicalCard, setMedicalCardForm]);
+  }, [patient, orthodonticData, isEditingMedicalCard, setMedicalCardForm]);
 
   // Загрузка данных пациента
   useEffect(() => {
@@ -1045,6 +1090,12 @@ const PatientCardRefactored = ({ patient: patientProp, onBack }) => {
             <span>🖥️</span> 3D Модели
           </button>
         </div>
+
+        {/* Медицинская форма пациента */}
+        <PatientMedicalForm
+          formData={medicalCardForm}
+          onChange={handleMedicalCardChange}
+        />
       </div>
     </div>
   );
