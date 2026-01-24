@@ -3,10 +3,10 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavig
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import PatientDirectory from './components/PatientDirectory';
-import MedicalCard from './components/MedicalCard';
 import PatientCard from './components/PatientCard';
 import FileLibrary from './components/FileLibrary';
 import PresentationGenerator from './components/PresentationGenerator';
+import PatientCardWithPatient from './components/PatientCard'
 import MedicalCardGenerator from './components/MedicalCardGenerator';
 import CephalometryModule from './components/CephalometryModule';
 import PhotometryModule from './components/photometry/PhotometryModuleRefactored';
@@ -101,8 +101,8 @@ function AuthWrapper({ onLogin, onLogout, isLoggedIn, user }) {
           <Route path="/" element={<Navigate to="/patients" />} />
           <Route path="/dashboard" element={<Dashboard user={user} />} />
           <Route path="/patients" element={<PatientDirectory />} />
-          <Route path="/medical-card/:id" element={<MedicalCardWithPatient />} />
-          <Route path="/medical-card" element={<MedicalCardWithPatient />} />
+          <Route path="/medical-card/:id" element={<PatientCardWithPatient />} />
+          <Route path="/medical-card" element={<PatientCardWithPatient />} />
           <Route path="/patients/:id" element={<PatientCard />} />
           <Route path="/file-library" element={<FileLibrary />} />
           <Route path="/presentation-generator" element={<PresentationGenerator />} />
@@ -153,12 +153,7 @@ function MedicalCardWithPatient() {
     navigate('/patients');
   };
 
-  return (
-    <MedicalCard 
-      patient={selectedPatient} 
-      onBack={handleBackToPatientDirectory}
-    />
-  );
+
 }
 
 function App() {
