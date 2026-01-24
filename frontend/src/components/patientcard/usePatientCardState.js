@@ -62,7 +62,36 @@ export const usePatientCardState = (patientProp) => {
   // Состояние медицинской карты
   const [isEditingMedicalCard, setIsEditingMedicalCard] = useState(false);
   const [medicalCardForm, setMedicalCardForm] = useState({
+    fullName: '',
+    gender: 'female',
+    birthDay: '',
+    birthMonth: '',
+    birthYear: '',
+    registration: {
+      republic: '',
+      region: '',
+      city: '',
+      settlement: '',
+      street: '',
+      house: '',
+      apartment: '',
+      phone: ''
+    },
+    locality: 'urban',
+    maritalStatus: '',
+    education: '',
+    faceFront: {
+      width: '',
+      heightNasal: '',
+      heightSubnasal: '',
+      symmetry: 'Нет',
+      chinPosition: '',
+      nasolabialFold: 'Нет',
+      lipClosure: 'Нет',
+      gumSmile: 'Нет'
+    },
     faceProfile: {
+      type: 'straight',
       upperLip: 'normal',
       lowerLip: 'normal',
       chin: 'normal'
