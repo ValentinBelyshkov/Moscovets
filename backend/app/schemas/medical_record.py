@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional, List
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from app.models.medical_record import MedicalRecordType
 
@@ -30,24 +30,21 @@ class MedicalRecordHistoryCreate(MedicalRecordHistoryBase):
     pass
 
 class MedicalRecordHistory(MedicalRecordHistoryBase):
+    model_config = ConfigDict(from_attributes=True)
+    
     id: int
     created_at: datetime
 
-    class Config:
-        from_attributes = True
-
 # Properties to return via API
 class MedicalRecord(MedicalRecordBase):
+    model_config = ConfigDict(from_attributes=True)
+    
     id: int
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
-
 # Properties for medical record with history
 class MedicalRecordWithHistory(MedicalRecord):
+    model_config = ConfigDict(from_attributes=True)
+    
     history: List[MedicalRecordHistory] = []
-
-    class Config:
-        from_attributes = True
