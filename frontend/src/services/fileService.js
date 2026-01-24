@@ -98,6 +98,30 @@ class FileService {
     }
   }
 
+  // Получение URL для изображения с авторизацией (для использования в img тегах)
+  async getImageUrl(fileId) {
+    try {
+      // Сначала проверяем, есть ли токен
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Authentication token not found');
+      }
+
+      // Создаем временный URL с использованием Blob
+      const blob = await this.downloadFile(fileId);
+      const imageUrl = URL.createObjectURL(blob);
+      return imageUrl;
+    } catch (error) {
+      console.error('Error getting image URL:', error);
+      throw error;
+    }
+  }
+
+  // Альтернативное название для получения фото
+  async get_photo(fileId) {
+    return this.getImageUrl(fileId);
+  }
+
   // Получение списка файлов
   async getFiles(skip = 0, limit = 100) {
     try {

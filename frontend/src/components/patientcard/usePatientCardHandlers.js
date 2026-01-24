@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import fileService from '../../services/fileService';
 
 export const usePatientCardHandlers = (patient, medicalCardData) => {
   // Функция для загрузки данных фотометрии
@@ -42,6 +43,71 @@ export const usePatientCardHandlers = (patient, medicalCardData) => {
           console.log('Found photometry data in medical_card:', medicalCardKey);
           return parsed.modules.photometry.data || parsed.modules.photometry;
         }
+      }
+
+      // 4. Загружаем фотофайлы из бэкенда если нет обработанных данных
+      try {
+        const response = await fetch(`${process.env.REACT_APP_URL_API || 'http://localhost:8000'}/api/v1/files/patient/${patientId}/files?file_type=photo`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+
+        if (response.ok) {
+          const files = await response.json();
+          
+          if (files && Array.isArray(files) && files.length > 0) {
+            // Создаем базовую структуру фотометрии с изображениями
+            const photoUrls = {};
+            let photoCount = 0;
+            
+            for (const file of files) {
+              // Ensure we're checking the right file type - might be an enum value
+              const fileType = typeof file.file_type === 'object' ? file.file_type.value : file.file_type;
+              if ((fileType === 'photo' || fileType === 'PHOTO') && photoCount < 4) { // Предполагаем до 4 фото
+                // Используем сервис для получения URL изображения с авторизацией
+                try {
+                  const photoUrl = await fileService.getImageUrl(file.id);
+                  
+                  if (photoCount === 0) {
+                    photoUrls.frontal = photoUrl; // Предполагаем, что первое фото - анфас
+                  } else if (photoCount === 1) {
+                    photoUrls.profile = photoUrl; // Профиль
+                  } else if (photoCount === 2) {
+                    photoUrls.profile45 = photoUrl; // Под углом 45
+                  } else if (photoCount === 3) {
+                    photoUrls.intraoral = photoUrl; // Внутриротовые
+                  }
+                  
+                  photoCount++;
+                } catch (urlError) {
+                  console.error(`Error getting URL for file ${file.id}:`, urlError);
+                  // Продолжаем с другими файлами
+                  continue;
+                }
+              }
+            }
+            
+            // Возвращаем структуру с фото, но без измерений
+            return {
+              patientId,
+              patientName: `Patient ${patientId}`,
+              analysisDate: new Date().toISOString(),
+              projectionType: 'frontal', // по умолчанию
+              measurements: {},
+              points: {},
+              scale: 0, // без калибровки
+              images: photoUrls,
+              report: null,
+              structuredData: null
+            };
+          }
+        } else {
+          console.warn('Failed to fetch photo files:', response.status, response.statusText);
+        }
+      } catch (fetchError) {
+        console.warn('Could not fetch photo files from backend:', fetchError);
+        // Продолжаем выполнение, если не удалось получить фото
       }
 
       return null;

@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import patientService from '../../services/patientService';
 import { useData } from '../../contexts/DataContext';
@@ -61,6 +61,9 @@ const PatientCardRefactored = ({ patient: patientProp, onBack }) => {
     setShowPhotoUpload,
     hasLoadedRef
   } = usePatientCardState(patientProp);
+  
+  // Ref для хранения URL изображений для очистки
+  const imageUrlsRef = useRef(new Set());
 
   // Обработчики и трансформеры
   const { medicalCardData } = useData();
@@ -239,13 +242,62 @@ const PatientCardRefactored = ({ patient: patientProp, onBack }) => {
     setError
   ]);
 
+  // Функция для очистки URL изображений
+  const cleanupImageUrls = useCallback(() => {
+    imageUrlsRef.current.forEach(url => {
+      try {
+        URL.revokeObjectURL(url);
+      } catch (e) {
+        console.warn('Error revoking object URL:', e);
+      }
+    });
+    imageUrlsRef.current.clear();
+  }, []);
+
   // Загрузка данных при монтировании
   useEffect(() => {
     if (!hasLoadedRef.current && patient) {
       hasLoadedRef.current = true;
       loadMedicalData(patient);
     }
-  }, [patient, loadMedicalData, hasLoadedRef]);
+    
+    // Cleanup function
+    return () => {
+      cleanupImageUrls();
+    };
+  }, [patient, loadMedicalData, hasLoadedRef, cleanupImageUrls]);
+
+  // Очистка URL изображений при изменении фотометрических изображений
+  useEffect(() => {
+    // Сохраняем предыдущие URL для очистки
+    const prevUrls = [...imageUrlsRef.current];
+    
+    // Добавляем новые URL в ref
+    imageUrlsRef.current.clear();
+    if (photometryImages.frontal && typeof photometryImages.frontal === 'string' && photometryImages.frontal.startsWith('blob:')) {
+      imageUrlsRef.current.add(photometryImages.frontal);
+    }
+    if (photometryImages.profile && typeof photometryImages.profile === 'string' && photometryImages.profile.startsWith('blob:')) {
+      imageUrlsRef.current.add(photometryImages.profile);
+    }
+    if (photometryImages.profile45 && typeof photometryImages.profile45 === 'string' && photometryImages.profile45.startsWith('blob:')) {
+      imageUrlsRef.current.add(photometryImages.profile45);
+    }
+    if (photometryImages.intraoral && typeof photometryImages.intraoral === 'string' && photometryImages.intraoral.startsWith('blob:')) {
+      imageUrlsRef.current.add(photometryImages.intraoral);
+    }
+
+    // Очищаем старые URL
+    prevUrls.forEach(url => {
+      if (!imageUrlsRef.current.has(url)) {
+        try {
+          URL.revokeObjectURL(url);
+        } catch (e) {
+          console.warn('Error revoking object URL:', e);
+        }
+      }
+    });
+  }, [photometryImages]);
 
   // Функции для отображения
   const calculateAge = (birthDate) => {
@@ -433,11 +485,31 @@ const PatientCardRefactored = ({ patient: patientProp, onBack }) => {
               
               {/* Основное фото */}
               <div className="mb-4">
-                <div className="aspect-square rounded-xl bg-gray-200 overflow-hidden shadow-inner flex items-center justify-center">
-                  <svg className="w-20 h-20 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                </div>
+                {photometryImages.frontal ? (
+                  <div className="aspect-square rounded-xl bg-gray-200 overflow-hidden shadow-inner flex items-center justify-center">
+                    {typeof photometryImages.frontal === 'string' && (
+                      <img
+                        src={photometryImages.frontal}
+                        alt="Фото анфас"
+                        className="w-full h-full object-contain"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 24 24"><rect width="24" height="24" fill="%23d1d5db"/><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" stroke="%239ca3af" stroke-width="1"/></svg>`;
+                        }}
+                        onLoad={(e) => {
+                          // Ensure the image is loaded properly
+                          e.target.style.display = 'block';
+                        }}
+                      />
+                    )}
+                  </div>
+                ) : (
+                  <div className="aspect-square rounded-xl bg-gray-200 overflow-hidden shadow-inner flex items-center justify-center">
+                    <svg className="w-20 h-20 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                )}
                 <p className="text-xs text-gray-500 mt-2 text-center">Фото анфас</p>
               </div>
               
@@ -576,11 +648,25 @@ const PatientCardRefactored = ({ patient: patientProp, onBack }) => {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {/* Изображение */}
                   <div className="bg-gray-100 rounded-xl overflow-hidden">
-                    <div className="aspect-video flex items-center justify-center">
-                      <svg className="w-24 h-24 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                    </div>
+                    {activeTab === 'photometry' && photometryImages.frontal ? (
+                      typeof photometryImages.frontal === 'string' && (
+                        <img
+                          src={photometryImages.frontal}
+                          alt="Фотометрия"
+                          className="w-full h-full aspect-video object-contain"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 24 24"><rect width="24" height="24" fill="%23d1d5db"/><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" stroke="%239ca3af" stroke-width="1"/></svg>`;
+                          }}
+                        />
+                      )
+                    ) : (
+                      <div className="aspect-video flex items-center justify-center">
+                        <svg className="w-24 h-24 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                    )}
                   </div>
 
                   {/* Результаты */}

@@ -182,7 +182,9 @@ def get_patient_files(
             medical_category=medical_category
         )
         
-        return files
+        # Convert SQLAlchemy models to Pydantic schemas
+        file_schemas = [schemas.File.model_validate(file) for file in files]
+        return file_schemas
         
     except HTTPException:
         raise
