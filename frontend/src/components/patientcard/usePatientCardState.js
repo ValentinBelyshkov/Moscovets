@@ -59,6 +59,16 @@ export const usePatientCardState = (patientProp) => {
   const [medicalData, setMedicalData] = useState(null);
   const [orthodonticData, setOrthodonticData] = useState(null);
 
+  // Состояние медицинской карты
+  const [isEditingMedicalCard, setIsEditingMedicalCard] = useState(false);
+  const [medicalCardForm, setMedicalCardForm] = useState({
+    faceProfile: {
+      upperLip: 'normal',
+      lowerLip: 'normal',
+      chin: 'normal'
+    }
+  });
+
   // Состояние для управления формой загрузки фото
   const [showPhotoUpload, setShowPhotoUpload] = useState(false);
 
@@ -117,6 +127,12 @@ export const usePatientCardState = (patientProp) => {
     setMedicalData,
     orthodonticData,
     setOrthodonticData,
+
+    // Состояние медицинской карты
+    isEditingMedicalCard,
+    setIsEditingMedicalCard,
+    medicalCardForm,
+    setMedicalCardForm,
 
     // Состояние для управления формой загрузки фото
     showPhotoUpload,

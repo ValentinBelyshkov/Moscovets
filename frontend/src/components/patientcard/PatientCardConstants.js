@@ -1,13 +1,13 @@
 // Constants for PatientCard component
 
 export const MODULE_TABS = [
-  { id: 'overview', label: 'Обзор', icon: '📊' },
+  { id: 'overview', label: 'Медицинская карта', icon: '📋' },
   { id: 'photometry', label: 'Фотометрия', icon: '📷' },
   { id: 'cephalometry', label: 'Цефалометрия', icon: '🦴' },
   { id: 'biometry', label: 'Биометрия', icon: '📐' },
   { id: 'modeling', label: '3D Модели', icon: '🖥️' },
   { id: 'ct', label: 'КТ', icon: '🩻' },
-  { id: 'history', label: 'История', icon: '📋' }
+  { id: 'history', label: 'История', icon: '📝' }
 ];
 
 export const MODULE_INFO = {
