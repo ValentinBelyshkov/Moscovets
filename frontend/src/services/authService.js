@@ -1,24 +1,63 @@
 // Сервис для работы с аутентификацией
 
 class AuthService {
-  // Аутентификация пользователя и получение токена (локальная версия)
+  constructor() {
+    this.baseUrl = '/api/v1/auth';
+  }
+
+  // Получение заголовков с авторизацией
+  getHeaders() {
+    const headers = {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    };
+    return headers;
+  }
+
+  // Аутентификация пользователя и получение токена через API
   async login(username, password) {
     try {
-      // В локальном режиме мы не отправляем запрос на сервер
-      // Вместо этого мы симулируем успешную аутентификацию
-      console.log('Local login simulation');
+      console.log('Attempting login via API for user:', username);
       
-      // Проверяем учетные данные (в локальном режиме используем тестовые данные)
-      if (username === 'test' && password === 'test') {
-        // Генерируем токен (в реальном приложении это делает сервер)
-        const token = 'local_test_token_' + Date.now();
-        console.log('Login successful');
-        return { access_token: token };
-      } else {
-        throw new Error('Неверное имя пользователя или пароль');
+      // Формируем данные в формате x-www-form-urlencoded для OAuth2
+      const formData = new URLSearchParams();
+      formData.append('username', username);
+      formData.append('password', password);
+      
+      const headers = this.getHeaders();
+      
+      // Add timeout to prevent hanging requests
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
+      const response = await fetch(`${this.baseUrl}/login`, {
+        method: 'POST',
+        headers: headers,
+        body: formData,
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('HTTP error response:', errorText);
+        console.error('Response status:', response.status);
+        throw new Error(`Неверное имя пользователя или пароль`);
       }
+      
+      const result = await response.json();
+      console.log('Login successful:', result);
+      return result;
     } catch (error) {
       console.error('Error during login:', error);
+      
+      // Provide more specific error messages
+      if (error.name === 'AbortError') {
+        throw new Error('Превышено время ожидания ответа от сервера. Проверьте, что сервер запущен и доступен.');
+      } else if (error instanceof TypeError && error.message.includes('fetch')) {
+        throw new Error('Не удалось подключиться к серверу. Проверьте, что сервер запущен и доступен. ' + error.message);
+      }
+      
       throw error;
     }
   }

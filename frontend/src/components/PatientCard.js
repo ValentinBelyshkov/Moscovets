@@ -225,26 +225,34 @@ const PatientCard = ({ patient, onBack }) => {
                 {/* Информация о пациенте */}
                 <div className="flex-1 min-w-0">
                   <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                    {patient?.fullName || 'Иванова Мария Петровна'}
+                    {patient?.full_name || patient?.fullName || 'Иванова Мария Петровна'}
                   </h2>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                     <div>
                       <p className="text-gray-500">Дата рождения</p>
                       <p className="font-medium text-gray-900">
-                        {patient?.birthDate || '15.03.1995'} ({calculateAge(patient?.birthDate || '1995-03-15')} лет)
+                        {formatDate(patient?.birth_date || patient?.birthDate)} ({calculateAge(patient?.birth_date || patient?.birthDate || '1995-03-15')} лет)
                       </p>
                     </div>
                     <div>
                       <p className="text-gray-500">Пол</p>
-                      <p className="font-medium text-gray-900">{patient?.gender || 'Женский'}</p>
+                      <p className="font-medium text-gray-900">
+                        {(() => {
+                          const gender = patient?.gender;
+                          if (!gender) return 'Женский';
+                          if (gender === 'male' || gender === 'Male') return 'Мужской';
+                          if (gender === 'female' || gender === 'Female') return 'Женский';
+                          return gender;
+                        })()}
+                      </p>
                     </div>
                     <div>
                       <p className="text-gray-500">Телефон</p>
-                      <p className="font-medium text-gray-900">{patient?.contactInfo || '+7 (999) 123-45-67'}</p>
+                      <p className="font-medium text-gray-900">{patient?.contact_info || patient?.contactInfo || '+7 (999) 123-45-67'}</p>
                     </div>
                     <div>
                       <p className="text-gray-500">Дата обращения</p>
-                      <p className="font-medium text-gray-900">{formatDate(patient?.lastVisit || new Date().toISOString())}</p>
+                      <p className="font-medium text-gray-900">{formatDate(patient?.created_at || patient?.lastVisit || new Date().toISOString())}</p>
                     </div>
                     <div>
                       <p className="text-gray-500">Лечащий врач</p>
