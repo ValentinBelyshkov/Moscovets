@@ -890,7 +890,8 @@ const ThreeDViewer2 = React.forwardRef(({
     console.log("🔧 Запуск подгонки моделей...");
     setIsFitting(true);
     setFittingProgress(0);
-
+    let originalUpperPos;
+    let originalLowerPos;
     try {
       // Найти верхнюю и нижнюю челюсти
       const upperJaw = modelRefs.current.upperJaw;
@@ -903,8 +904,8 @@ const ThreeDViewer2 = React.forwardRef(({
       }
 
       // Сохранить текущие позиции для возможного отката
-      const originalUpperPos = upperJaw.position.clone();
-      const originalLowerPos = lowerJaw.position.clone();
+      originalUpperPos = upperJaw.position.clone();
+      originalLowerPos = lowerJaw.position.clone();
 
       // Обновить прогресс
       setFittingProgress(25);
