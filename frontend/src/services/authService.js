@@ -22,6 +22,7 @@ class AuthService {
       const formData = new URLSearchParams();
       formData.append('username', username);
       formData.append('password', password);
+      formData.append('grant_type', 'password');
       
       const headers = this.getHeaders();
       
@@ -67,6 +68,10 @@ class AuthService {
     try {
       console.log('Attempting registration via API for user:', userData.username);
       
+      // Add timeout to prevent hanging requests
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
       const response = await fetch(`${this.baseUrl}/register`, {
         method: 'POST',
         headers: {
@@ -77,8 +82,11 @@ class AuthService {
           email: userData.email,
           full_name: userData.fullName,
           password: userData.password
-        })
+        }),
+        signal: controller.signal
       });
+
+      clearTimeout(timeoutId);
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
