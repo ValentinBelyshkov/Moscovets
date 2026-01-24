@@ -1,6 +1,11 @@
 import React from 'react';
+import './PhotometryModule.css';
 
-const PatientInfoPanel = ({ photometryData, onDataChange }) => {
+const PatientInfoPanel = ({ 
+  photometryData, 
+  setPhotometryData,
+  setShowFileLibrary
+}) => {
   return (
     <div className="patient-info">
       <h3>Информация о пациенте</h3>
@@ -9,10 +14,10 @@ const PatientInfoPanel = ({ photometryData, onDataChange }) => {
         <input
           type="text"
           value={photometryData.patientName}
-          onChange={(e) => onDataChange({
-            ...photometryData,
+          onChange={(e) => setPhotometryData(prev => ({
+            ...prev,
             patientName: e.target.value
-          })}
+          }))}
         />
       </div>
       <div className="form-group">
@@ -20,40 +25,34 @@ const PatientInfoPanel = ({ photometryData, onDataChange }) => {
         <input
           type="date"
           value={photometryData.analysisDate}
-          onChange={(e) => onDataChange({
-            ...photometryData,
+          onChange={(e) => setPhotometryData(prev => ({
+            ...prev,
             analysisDate: e.target.value
-          })}
+          }))}
         />
       </div>
       <div className="form-group">
         <label>Тип проекции:</label>
         <select
           value={photometryData.projectionType}
-          onChange={(e) => onDataChange({
-            ...photometryData,
+          onChange={(e) => setPhotometryData(prev => ({
+            ...prev,
             projectionType: e.target.value
-          })}
+          }))}
         >
           <option value="frontal">Анфас</option>
-          <option value="frontalSmile">Анфас с улыбкой</option>
-          <option value="frontalRetractorsClosed">Анфас с закрытыми щечками</option>
-          <option value="frontalRetractorsOpen">Анфас с открытыми щечками</option>
-          <option value="profileRight">Профиль справа</option>
-          <option value="profileLeft">Профиль слева</option>
-          <option value="profileSmileRight">Профиль справа с улыбкой</option>
-          <option value="profileSmileLeft">Профиль слева с улыбкой</option>
-          <option value="profile45Right">Профиль 45° справа</option>
-          <option value="profile45Left">Профиль 45° слева</option>
-          <option value="intraoralFrontalClosed">Внутриротовые анфас закрыто</option>
-          <option value="intraoralFrontalOpen">Внутриротовые анфас открыто</option>
-          <option value="intraoralRight90">Внутриротовые справа 90°</option>
-          <option value="intraoralRight45">Внутриротовые справа 45°</option>
-          <option value="intraoralLeft90">Внутриротовые слева 90°</option>
-          <option value="intraoralLeft45">Внутриротовые слева 45°</option>
-          <option value="intraoralUpper">Верхняя челюсть</option>
-          <option value="intraoralLower">Нижняя челюсть</option>
+          <option value="profile">Профиль</option>
+          <option value="profile45">Профиль 45°</option>
+          <option value="intraoral">Внутриротовые</option>
         </select>
+      </div>
+      <div className="form-group">
+        <button 
+          onClick={() => setShowFileLibrary(true)}
+          className="load-image-btn"
+        >
+          Загрузить изображение
+        </button>
       </div>
     </div>
   );
