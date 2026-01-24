@@ -808,33 +808,6 @@ const PatientCardRefactored = ({ patient: patientProp, onBack }) => {
                       </p>
                     </div>
 
-                    {/* Diagnostic modules status summary */}
-                    <div className="md:col-span-2 mt-4">
-                      <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">
-                        Статус диагностических модулей
-                      </h4>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        {modules.filter(m => m.id !== 'history').slice(0, 4).map((module) => (
-                          <div
-                            key={module.id}
-                            className={`p-4 rounded-xl border transition-all cursor-pointer hover:shadow-md flex items-center gap-3 ${
-                              module.hasData ? 'bg-white border-gray-200' : 'bg-gray-50 border-dashed border-gray-300'
-                            }`}
-                            onClick={() => navigateToModule(module.id)}
-                          >
-                            <div className={`w-10 h-10 rounded-lg ${module.color} flex items-center justify-center text-xl flex-shrink-0`}>
-                              {module.icon}
-                            </div>
-                            <div className="min-w-0">
-                              <h4 className="font-semibold text-xs text-gray-900 truncate">{module.name}</h4>
-                              <p className={`text-[10px] ${module.hasData ? 'text-green-600' : 'text-gray-400'}`}>
-                                {module.hasData ? '✓ Готов' : '○ Нет данных'}
-                              </p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
                   </div>
                 )}
               </div>
