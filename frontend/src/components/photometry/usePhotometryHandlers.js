@@ -18,8 +18,11 @@ export const usePhotometryHandlers = (state) => {
     setActiveTool,
     setSelectedPoint,
     setSelectedPointImage,
+    nextPointToPlace,
     setNextPointToPlace,
+    isDragging,
     setIsDragging,
+    dragOffset,
     setDragOffset,
     setIsMagnifierActive,
     setMagnifierPosition,
@@ -28,7 +31,8 @@ export const usePhotometryHandlers = (state) => {
     showPlanes,
     showAngles,
     isMagnifierActive,
-    magnifierPosition
+    magnifierPosition,
+    pointsListRef
   } = state;
 
   // Handle image upload
@@ -652,7 +656,7 @@ export const usePhotometryHandlers = (state) => {
 
   // Scroll to the next point when it changes
   useEffect(() => {
-    if (nextPointToPlace && state.pointsListRef.current) {
+    if (nextPointToPlace && pointsListRef.current) {
       const timer = setTimeout(() => {
         const nextPointElement = document.querySelector(`.point-item.next-point`);
         if (nextPointElement) {
