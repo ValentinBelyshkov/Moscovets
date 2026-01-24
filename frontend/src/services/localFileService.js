@@ -136,7 +136,7 @@ class LocalFileService {
   }
 
   // Загрузка файла (симуляция)
-  async uploadFile(file, patientId, description = '') {
+  async uploadFile(file, patientId, fileType = 'photo', medicalCategory = 'clinical', studyDate = '', bodyPart = '', description = '') {
     try {
       // Проверяем размер файла перед обработкой
       if (file.size > this.maxStorageSize) { // 50MB лимит
@@ -149,10 +149,13 @@ class LocalFileService {
       const newFile = {
         id: this.generateId(),
         name: file.name,
-        type: file.type,
+        type: fileType, // Use passed fileType
         size: file.size,
         patient_id: patientId,
         description: description,
+        medical_category: medicalCategory,
+        study_date: studyDate,
+        body_part: bodyPart,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         // В реальной реализации здесь был бы путь к файлу на сервере

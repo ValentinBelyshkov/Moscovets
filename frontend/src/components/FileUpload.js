@@ -6,6 +6,10 @@ const FileUpload = ({ onUploadSuccess }) => {
   const [files, setFiles] = useState([]);
   const [patientId, setPatientId] = useState('');
   const [description, setDescription] = useState('');
+  const [fileType, setFileType] = useState('photo');
+  const [medicalCategory, setMedicalCategory] = useState('clinical');
+  const [studyDate, setStudyDate] = useState(new Date().toISOString().split('T')[0]);
+  const [bodyPart, setBodyPart] = useState('');
   const [uploading, setUploading] = useState(false);
   const [storageInfo, setStorageInfo] = useState({ used: 0, total: 0, percentage: 0, filesCount: 0 });
 
@@ -44,7 +48,7 @@ const FileUpload = ({ onUploadSuccess }) => {
     try {
       // Загружаем все выбранные файлы
       const uploadPromises = files.map(file =>
-        localFileService.uploadFile(file, patientId, description)
+        localFileService.uploadFile(file, patientId, fileType, medicalCategory, studyDate, bodyPart, description)
       );
       
       const results = await Promise.all(uploadPromises);
@@ -101,6 +105,52 @@ const FileUpload = ({ onUploadSuccess }) => {
             value={patientId}
             onChange={(e) => setPatientId(e.target.value)}
             required
+          />
+        </div>
+        <div>
+          <label htmlFor="file-type">Тип файла:</label>
+          <select
+            id="file-type"
+            value={fileType}
+            onChange={(e) => setFileType(e.target.value)}
+          >
+            <option value="photo">Фото</option>
+            <option value="ct_scan">КТ</option>
+            <option value="stl_model">STL модель</option>
+            <option value="xray">Рентген</option>
+            <option value="other">Другое</option>
+          </select>
+        </div>
+        <div>
+          <label htmlFor="medical-category">Категория:</label>
+          <select
+            id="medical-category"
+            value={medicalCategory}
+            onChange={(e) => setMedicalCategory(e.target.value)}
+          >
+            <option value="clinical">Клиническая</option>
+            <option value="diagnostic">Диагностическая</option>
+            <option value="treatment">Лечение</option>
+            <option value="surgical">Хирургическая</option>
+          </select>
+        </div>
+        <div>
+          <label htmlFor="study-date">Дата исследования:</label>
+          <input
+            type="date"
+            id="study-date"
+            value={studyDate}
+            onChange={(e) => setStudyDate(e.target.value)}
+          />
+        </div>
+        <div>
+          <label htmlFor="body-part">Область тела:</label>
+          <input
+            type="text"
+            id="body-part"
+            value={bodyPart}
+            onChange={(e) => setBodyPart(e.target.value)}
+            placeholder="напр. верхняя челюсть"
           />
         </div>
         <div>

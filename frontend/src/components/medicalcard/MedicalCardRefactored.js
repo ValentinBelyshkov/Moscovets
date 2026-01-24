@@ -245,7 +245,7 @@ const MedicalCardRefactored = ({ patient, onBack }) => {
         {activeModule === 'overview' && <MedicalCardOverview orthodonticData={orthodonticData} moduleData={moduleData} patient={patient} />}
         {activeModule === 'personal' && <MedicalCardPersonalData orthodonticData={orthodonticData} />}
         {activeModule === 'anamnesis' && <MedicalCardAnamnesis orthodonticData={orthodonticData} />}
-        {activeModule === 'photo' && <MedicalCardPhotoAnalysis orthodonticData={orthodonticData} />}
+        {activeModule === 'photo' && <MedicalCardPhotoAnalysis orthodonticData={orthodonticData} patientId={patient?.id || 'demo'} />}
         {activeModule === 'intraoral' && <MedicalCardIntraoralAnalysis orthodonticData={orthodonticData} />}
         {activeModule === 'anthropometry' && <MedicalCardAnthropometry orthodonticData={orthodonticData} />}
         {activeModule === 'cephalometry' && <MedicalCardCephalometry orthodonticData={orthodonticData} />}
