@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
+import PatientCard from './PatientCard';
 
-const PatientDirectory = ({ onViewMedicalCard }) => {
+const PatientDirectory = () => {
   // Sample patient data
   const [patients, setPatients] = useState([
-    { id: 1, fullName: 'John Doe', birthDate: '1990-01-01', gender: 'Male', lastVisit: '2023-05-15' },
-    { id: 2, fullName: 'Jane Smith', birthDate: '1985-03-15', gender: 'Female', lastVisit: '2023-05-20' },
-    { id: 3, fullName: 'Robert Johnson', birthDate: '1978-11-22', gender: 'Male', lastVisit: '2023-05-10' },
+    { id: 1, fullName: 'Иванова Мария Петровна', birthDate: '1995-03-15', gender: 'Female', lastVisit: '2024-01-15', complaints: 'Неровные зубы, эстетический дефект' },
+    { id: 2, fullName: 'Петров Александр Иванович', birthDate: '1985-06-22', gender: 'Male', lastVisit: '2024-01-14', complaints: 'Неправильный прикус' },
+    { id: 3, fullName: 'Сидорова Елена Викторовна', birthDate: '1990-11-08', gender: 'Female', lastVisit: '2024-01-10', complaints: 'Скученность зубов' },
   ]);
 
   const [showAddForm, setShowAddForm] = useState(false);
@@ -15,6 +16,7 @@ const PatientDirectory = ({ onViewMedicalCard }) => {
     gender: '',
     contactInfo: ''
   });
+  const [selectedPatient, setSelectedPatient] = useState(null);
 
   const handleAddPatient = () => {
     setShowAddForm(true);
@@ -30,7 +32,6 @@ const PatientDirectory = ({ onViewMedicalCard }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // In a real application, you would send this data to your backend API
     const patient = {
       ...newPatient,
       id: patients.length + 1,
@@ -41,10 +42,18 @@ const PatientDirectory = ({ onViewMedicalCard }) => {
     setShowAddForm(false);
   };
 
-  const handleViewMedicalCard = (patient) => {
-    // In a real application, this would navigate to the medical card page
-    onViewMedicalCard(patient);
+  const handleViewPatientCard = (patient) => {
+    setSelectedPatient(patient);
   };
+
+  const handleBackToDirectory = () => {
+    setSelectedPatient(null);
+  };
+
+  // Если выбран пациент, показываем его карточку
+  if (selectedPatient) {
+    return <PatientCard patient={selectedPatient} onBack={handleBackToDirectory} />;
+  }
 
   return (
     <div className="max-w-6xl mx-auto p-6">
@@ -161,10 +170,13 @@ const PatientDirectory = ({ onViewMedicalCard }) => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{patient.lastVisit}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     <button 
-                      onClick={() => handleViewMedicalCard(patient)}
-                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-300 ease-in-out"
+                      onClick={() => handleViewPatientCard(patient)}
+                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300"
                     >
-                      Просмотреть медицинскую карту
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                      Открыть карту
                     </button>
                   </td>
                 </tr>

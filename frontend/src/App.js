@@ -123,6 +123,7 @@ function App() {
   const handleBackToPatientDirectory = () => {
     window.location.hash = '#patient-directory';
     setCurrentView('patient-directory');
+    setSelectedPatient(null);
   };
 
   if (initialLoad) {
@@ -181,7 +182,7 @@ function App() {
               )}
               
               {currentView === 'patient-directory' && (
-                <PatientDirectory onViewMedicalCard={handleViewMedicalCard} />
+                <PatientDirectory />
               )}
               
               {currentView === 'medical-card' && (
