@@ -27,9 +27,10 @@
   gap: 12px;
 }
 
-.lower-panel {
-  margin: 0 16px 16px 16px;
-  min-height: 300px;
+.config-panel {
+  overflow: auto;
+  min-height: 0;
+  min-width: 350px;
 }
 
 .control-row {
@@ -123,10 +124,14 @@ tr:hover td {
   background: #f9fafb;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1200px) {
   .workspace {
     flex-direction: column;
     gap: 12px;
+  }
+  
+  .config-panel {
+    min-width: auto;
   }
   
   .viewer {

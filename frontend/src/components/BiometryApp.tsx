@@ -113,6 +113,22 @@ function BiometryApp() {
 
   const layoutLeft = useMemo(
     () => (
+      <ConfigPanel
+        modelPoints={modelPoints}
+        mapPoints={mapPoints}
+        pairs={pairs}
+        status={status}
+        onLink={handleLink}
+        onDeletePair={handleDeletePair}
+        onExport={handleExport}
+        onClear={handleClear}
+      />
+    ),
+    [modelPoints, mapPoints, pairs, status, handleLink, handleDeletePair, handleExport, handleClear],
+  );
+
+  const layoutCenter = useMemo(
+    () => (
       <ModelViewer
         modelUrl={modelUrl}
         modelPoints={modelPoints}
@@ -137,23 +153,7 @@ function BiometryApp() {
     [mapPoints, placingMapPoint, handleAddMapPoint],
   );
 
-  const layoutBottom = useMemo(
-    () => (
-      <ConfigPanel
-        modelPoints={modelPoints}
-        mapPoints={mapPoints}
-        pairs={pairs}
-        status={status}
-        onLink={handleLink}
-        onDeletePair={handleDeletePair}
-        onExport={handleExport}
-        onClear={handleClear}
-      />
-    ),
-    [modelPoints, mapPoints, pairs, status, handleLink, handleDeletePair, handleExport, handleClear],
-  );
-
-  return <Layout left={layoutLeft} right={layoutRight} bottom={layoutBottom} />;
+  return <Layout left={layoutLeft} center={layoutCenter} right={layoutRight} />;
 }
 
 export default BiometryApp;
