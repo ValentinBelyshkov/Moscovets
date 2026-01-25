@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import FileUpload from './FileUpload';
 import FileVersionHistory from './FileVersionHistory';
-// Используем локальный сервис вместо серверного
+// Используем локальный сервис и API сервис для работы с файлами
 import localFileService from '../services/localFileService';
+import fileService from '../services/fileService';
 import './FileVersionHistory.css';
 
 const FileLibrary = ({ onSelectFile, onClose, patientId, fileType }) => {
@@ -13,6 +14,8 @@ const FileLibrary = ({ onSelectFile, onClose, patientId, fileType }) => {
   const [showUploadForm, setShowUploadForm] = useState(false);
   const [showVersionHistory, setShowVersionHistory] = useState(false);
   const [selectedFileId, setSelectedFileId] = useState(null);
+
+  const currentFileType = fileType || 'mri';
 
   // Загрузка списка файлов из локального хранилища или API
   const loadFiles = async () => {
@@ -27,8 +30,8 @@ const FileLibrary = ({ onSelectFile, onClose, patientId, fileType }) => {
         }
 
         let url = `/api/v1/files/patient/${patientId}/files`;
-        if (fileType) {
-          url += `?file_type=${fileType}`;
+        if (currentFileType) {
+          url += `?file_type=${currentFileType}`;
         }
 
         const response = await fetch(url, {
@@ -92,29 +95,14 @@ const FileLibrary = ({ onSelectFile, onClose, patientId, fileType }) => {
   const handleDownload = async (fileId) => {
     try {
       let blob;
-      
+
       // Если указан patientId, используем API для скачивания
       if (patientId) {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          throw new Error('Не авторизован');
-        }
-
-        const response = await fetch(`/api/v1/files/download/${fileId}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-
-        if (!response.ok) {
-          throw new Error('Не удалось скачать файл');
-        }
-
-        blob = await response.blob();
+        blob = await fileService.downloadFile(fileId);
       } else {
         // Иначе используем локальное хранилище
         const response = await localFileService.downloadFile(fileId);
-        
+
         // Check if response is a Blob or has data property
         if (response instanceof Blob) {
           blob = response;
@@ -124,7 +112,7 @@ const FileLibrary = ({ onSelectFile, onClose, patientId, fileType }) => {
           throw new Error('Invalid response format from downloadFile');
         }
       }
-      
+
       console.log('FileLibrary creating object URL with blob:', blob);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -194,7 +182,11 @@ const FileLibrary = ({ onSelectFile, onClose, patientId, fileType }) => {
       
       {showUploadForm && (
         <div className="upload-file-form">
-          <FileUpload onUploadSuccess={handleUploadSuccess} />
+          <FileUpload
+            onUploadSuccess={handleUploadSuccess}
+            patientId={patientId}
+            initialFileType={currentFileType}
+          />
           <button type="button" onClick={() => setShowUploadForm(false)}>Отмена</button>
         </div>
       )}
