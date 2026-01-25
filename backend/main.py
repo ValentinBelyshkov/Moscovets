@@ -107,7 +107,5 @@ if __name__ == "__main__":
         "main:app",
         host="0.0.0.0",
         port=5001,
-        reload=True,
-        # Increase request size limit to 500MB for CT scans
-        limit_max_request_size=500*1024*1024
+        reload=True
     )

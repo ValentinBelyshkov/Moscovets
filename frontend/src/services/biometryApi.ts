@@ -2,7 +2,16 @@ import axios from "axios";
 import type { MapPoint, ModelPoint, ObjUploadResponse, Pair, StatusResponse } from "../types";
 
 // Define the API base URL using the environment variable
-const apiBase = (process.env.REACT_APP_URL_API || "http://localhost:8000") as string;
+const getApiBaseUrl = () => {
+  // First try runtime config (from env-config.js)
+  if (typeof window !== 'undefined' && (window as any)._env_ && (window as any)._env_.REACT_APP_URL_API) {
+    return (window as any)._env_.REACT_APP_URL_API;
+  }
+  // Fallback to build-time environment variable
+  return process.env.REACT_APP_URL_API || "http://109.196.102.193:5001";
+};
+
+const apiBase = getApiBaseUrl();
 
 const client = axios.create({
   baseURL: apiBase,

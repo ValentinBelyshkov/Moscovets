@@ -1,22 +1,41 @@
-# Используем nginx для раздачи статических файлов
-FROM nginx:alpine
+# Используем node для запуска dev-сервера
+FROM node:18-alpine
 
-# Копируем конфигурацию nginx
-COPY nginx.conf /etc/nginx/nginx.conf
+# Устанавливаем необходимые системные зависимости для сборки canvas и других нативных модулей
+RUN apk add --no-cache \
+    python3 \
+    make \
+    g++ \
+    cairo-dev \
+    jpeg-dev \
+    pango-dev \
+    musl-dev \
+    giflib-dev \
+    pixman-dev \
+    pangomm-dev \
+    libjpeg-turbo-dev \
+    freetype-dev
 
-# Создаем директорию и устанавливаем правильные permissions
-RUN mkdir -p /usr/share/nginx/html && \
-    chown -R nginx:nginx /usr/share/nginx/html && \
-    chmod -R 755 /usr/share/nginx/html
+WORKDIR /app
 
-# Копируем уже собранные статические файлы
-COPY ./build /usr/share/nginx/html/
+# Копируем package файлы
+COPY package*.json ./
 
-# Устанавливаем правильного владельца для скопированных файлов
-RUN chown -R nginx:nginx /usr/share/nginx/html
+# Устанавливаем зависимости с увеличенным таймаутом и дополнительной информацией
+RUN npm config set fetch-timeout 600000 && \
+    npm config set fetch-retry-mintimeout 10000 && \
+    npm config set fetch-retry-maxtimeout 60000 && \
+    npm install --legacy-peer-deps --verbose
 
-# Проверяем что index.html существует
-RUN test -f /usr/share/nginx/html/index.html || echo "Warning: index.html not found"
+# Копируем исходный код
+COPY . .
 
-# Запускаем nginx
-CMD ["nginx", "-g", "daemon off;"]
+# Устанавливаем права доступа
+RUN chown -R node:node /app
+USER node
+
+# Открываем порт 3000 для dev-сервера
+EXPOSE 3000
+
+# Запускаем dev-сервер
+CMD ["npm", "start"]

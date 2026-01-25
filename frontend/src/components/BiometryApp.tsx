@@ -6,7 +6,7 @@ import { ConfigPanel } from "./ConfigPanel";
 import { biometryApi } from "../services/biometryApi";
 import type { MapPoint, ModelPoint, Pair, StatusResponse } from "../types";
 
-const apiBase = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
+const apiBase = import.meta.env.VITE_API_BASE_URL ?? "http://109.196.102.193:5001";
 
 function BiometryApp() {
   const [modelUrl, setModelUrl] = useState<string>();

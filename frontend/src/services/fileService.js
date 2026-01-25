@@ -1,5 +1,16 @@
 // Сервис для работы с файлами через API
-const API_BASE_URL = process.env.REACT_APP_URL_API || 'http://localhost:8000';
+
+// Use runtime configuration with fallback to build-time environment variable
+const getApiBaseUrl = () => {
+  // First try runtime config (from env-config.js)
+  if (typeof window !== 'undefined' && window._env_ && window._env_.REACT_APP_URL_API) {
+    return window._env_.REACT_APP_URL_API;
+  }
+  // Fallback to build-time environment variable
+  return process.env.REACT_APP_URL_API || 'http://109.196.102.193:5001';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 class FileService {
   constructor() {

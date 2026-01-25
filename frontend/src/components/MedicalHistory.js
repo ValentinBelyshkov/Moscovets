@@ -1,7 +1,16 @@
 import React, { useState, useEffect } from 'react';
 
-// Определяем API_BASE_URL локально или используем значение по умолчанию
-const API_BASE_URL = process.env.REACT_APP_URL_API || '/api/v1';
+// Use runtime configuration with fallback to build-time environment variable
+const getApiBaseUrl = () => {
+  // First try runtime config (from env-config.js)
+  if (typeof window !== 'undefined' && window._env_ && window._env_.REACT_APP_URL_API) {
+    return window._env_.REACT_APP_URL_API + '/api/v1';
+  }
+  // Fallback to build-time environment variable
+  return process.env.REACT_APP_URL_API || '/api/v1';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 const MedicalHistory = ({ patientId }) => {
   const [medicalHistory, setMedicalHistory] = useState([]);

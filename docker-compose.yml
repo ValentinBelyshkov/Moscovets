@@ -17,33 +17,30 @@ services:
     networks:
       - app-network
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5001/"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+
 
   frontend:
     build:
       context: ./frontend
+      args:
+        - NODE_ENV=development
     ports:
       - "3000:3000"
     volumes:
-      # Убираем volume mount для большей надежности
-      # - ./frontend/build:/usr/share/nginx/html:ro
-      - ./frontend/nginx.conf:/etc/nginx/nginx.conf:ro
+      # Mount source code for live reload
+      - ./frontend:/app
+      - /app/node_modules  # Avoid overriding node_modules
     environment:
-      - REACT_APP_API_URL=http://localhost:5001
+      - REACT_APP_URL_API=http://backend:5001
+      - CHOKIDAR_USEPOLLING=true
     depends_on:
-      - backend
+      backend:
+        condition: service_started
     networks:
       - app-network
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+    stdin_open: true
+    tty: true
 
   db:
     image: postgres:13

@@ -24,4 +24,7 @@ RUN mkdir -p /app/logs /app/frontend/build
 
 EXPOSE 5001
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5001", "--limit-max-request-size", "524288000"]
+# Set environment variable to ensure consistent behavior
+ENV PYTHONPATH=/app:$PYTHONPATH
+
+CMD ["sh", "-c", "export PYTHONPATH=$(pwd):$PYTHONPATH && uvicorn main:app --host 0.0.0.0 --port 5001"]
