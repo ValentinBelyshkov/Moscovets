@@ -458,7 +458,13 @@ const PatientCardRefactored = ({ patient: patientProp, onBack }) => {
     };
     
     if (routeMap[moduleId]) {
-      navigate(routeMap[moduleId], { 
+      const route = routeMap[moduleId];
+      const patientId = patient?.id;
+      
+      // Include patient ID in the route if available
+      const finalRoute = patientId ? `${route}/${patientId}` : route;
+      
+      navigate(finalRoute, { 
         state: { 
           patient: patient, 
           fromPatientCard: true 

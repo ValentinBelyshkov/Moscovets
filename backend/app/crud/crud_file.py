@@ -17,6 +17,7 @@ class CRUDFile(CRUDBase[File, FileCreate, FileUpdate]):
         # Create the file record
         db_obj = File(
             patient_id=obj_in.patient_id,
+            name=obj_in.name,
             file_path=obj_in.file_path,
             file_type=MedicalFileType(obj_in.file_type),
             description=obj_in.description,
