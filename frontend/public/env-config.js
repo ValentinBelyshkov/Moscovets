@@ -1,9 +1,9 @@
 // Runtime environment configuration
 window._env_ = window._env_ || {};
 
-// Default values - use relative path for development and Docker deployment
-// The React dev server proxy will handle API requests
-window._env_.REACT_APP_URL_API = window._env_.REACT_APP_URL_API || '/api';
+// Default values - use backend URL directly
+// Services will append /api/v1/... paths
+window._env_.REACT_APP_URL_API = window._env_.REACT_APP_URL_API || 'http://109.196.102.193:5001';
 
 // Allow overriding from query parameters for testing
 const urlParams = new URLSearchParams(window.location.search);
