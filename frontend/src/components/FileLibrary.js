@@ -5,7 +5,7 @@ import FileVersionHistory from './FileVersionHistory';
 import localFileService from '../services/localFileService';
 import './FileVersionHistory.css';
 
-const FileLibrary = ({ onSelectFile, onClose }) => {
+const FileLibrary = ({ onSelectFile, onClose, patientId, fileType }) => {
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -14,24 +14,62 @@ const FileLibrary = ({ onSelectFile, onClose }) => {
   const [showVersionHistory, setShowVersionHistory] = useState(false);
   const [selectedFileId, setSelectedFileId] = useState(null);
 
-  // Загрузка списка файлов из локального хранилища
+  // Загрузка списка файлов из локального хранилища или API
   const loadFiles = async () => {
     setLoading(true);
     setError(null);
     try {
-      const filesData = await localFileService.getFiles();
-      // Преобразуем данные файлов для отображения
-      const formattedFiles = filesData.map(file => ({
-        id: file.id,
-        name: file.name,
-        type: file.type,
-        size: file.size ? `${(file.size / 1024).toFixed(1)} KB` : 'Unknown',
-        uploaded: new Date(file.created_at).toLocaleDateString('ru-RU'),
-        patient: `Patient ID: ${file.patient_id}`,
-        created_at: file.created_at,
-        updated_at: file.updated_at
-      }));
-      setFiles(formattedFiles);
+      // Если указан patientId, загружаем через API
+      if (patientId) {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          throw new Error('Не авторизован');
+        }
+
+        let url = `/api/v1/files/patient/${patientId}/files`;
+        if (fileType) {
+          url += `?file_type=${fileType}`;
+        }
+
+        const response = await fetch(url, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Не удалось загрузить файлы');
+        }
+
+        const filesData = await response.json();
+        
+        const formattedFiles = filesData.map(file => ({
+          id: file.id,
+          name: file.name,
+          type: file.file_type,
+          size: file.file_size ? `${(file.file_size / 1024).toFixed(1)} KB` : 'Unknown',
+          uploaded: file.created_at ? new Date(file.created_at).toLocaleDateString('ru-RU') : 'Unknown',
+          patient: `Patient ID: ${file.patient_id}`,
+          created_at: file.created_at,
+          updated_at: file.updated_at
+        }));
+        setFiles(formattedFiles);
+      } else {
+        // Иначе загружаем из локального хранилища
+        const filesData = await localFileService.getFiles();
+        // Преобразуем данные файлов для отображения
+        const formattedFiles = filesData.map(file => ({
+          id: file.id,
+          name: file.name,
+          type: file.type,
+          size: file.size ? `${(file.size / 1024).toFixed(1)} KB` : 'Unknown',
+          uploaded: new Date(file.created_at).toLocaleDateString('ru-RU'),
+          patient: `Patient ID: ${file.patient_id}`,
+          created_at: file.created_at,
+          updated_at: file.updated_at
+        }));
+        setFiles(formattedFiles);
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -42,7 +80,7 @@ const FileLibrary = ({ onSelectFile, onClose }) => {
   // Загрузка файлов при монтировании компонента
   useEffect(() => {
     loadFiles();
-  }, []);
+  }, [patientId, fileType]);
 
   const handleUploadSuccess = (newFile) => {
     // Обновляем список файлов из локального хранилища
@@ -53,22 +91,38 @@ const FileLibrary = ({ onSelectFile, onClose }) => {
 
   const handleDownload = async (fileId) => {
     try {
-      const response = await localFileService.downloadFile(fileId);
-      
-      console.log('FileLibrary load file response:', response);
-      console.log('Response type:', typeof response);
-      console.log('Response instanceof Blob:', response instanceof Blob);
-      console.log('Response data type:', response && typeof response.data);
-      console.log('Response data instanceof Blob:', response && response.data instanceof Blob);
-      
-      // Check if response is a Blob or has data property
       let blob;
-      if (response instanceof Blob) {
-        blob = response;
-      } else if (response && response.data instanceof Blob) {
-        blob = response.data;
+      
+      // Если указан patientId, используем API для скачивания
+      if (patientId) {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          throw new Error('Не авторизован');
+        }
+
+        const response = await fetch(`/api/v1/files/download/${fileId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Не удалось скачать файл');
+        }
+
+        blob = await response.blob();
       } else {
-        throw new Error('Invalid response format from downloadFile');
+        // Иначе используем локальное хранилище
+        const response = await localFileService.downloadFile(fileId);
+        
+        // Check if response is a Blob or has data property
+        if (response instanceof Blob) {
+          blob = response;
+        } else if (response && response.data instanceof Blob) {
+          blob = response.data;
+        } else {
+          throw new Error('Invalid response format from downloadFile');
+        }
       }
       
       console.log('FileLibrary creating object URL with blob:', blob);
@@ -81,8 +135,6 @@ const FileLibrary = ({ onSelectFile, onClose }) => {
       // Remove the element after a short delay to ensure download completes
       setTimeout(() => {
         if (document.body.contains(a)) {
-          // Check if element is still attached to DOM before removing
-          // Check if element is still attached to DOM before removing
           if (a.parentNode && document.body.contains(a)) {
             document.body.removeChild(a);
           }

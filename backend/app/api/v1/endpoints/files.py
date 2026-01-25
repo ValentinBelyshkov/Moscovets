@@ -383,6 +383,7 @@ async def upload_file(
         # Create file record in database
         file_in = schemas.FileCreate(
             patient_id=patient_id,
+            name=file.filename,
             file_path=str(file_path),
             file_type=medical_file_type.value,
             description=description,

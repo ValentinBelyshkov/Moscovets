@@ -58,6 +58,7 @@ class File(Base):
     
     id: int = Column(Integer, primary_key=True, index=True)
     patient_id: int = Column(Integer, ForeignKey("patients.id"), nullable=False)
+    name: str = Column(String(255), nullable=False)  # Original filename
     file_path: str = Column(String, nullable=False)
     file_type: MedicalFileType = Column(Enum(MedicalFileType, name="medical_file_type"), nullable=False)
     description: str = Column(Text, nullable=True)

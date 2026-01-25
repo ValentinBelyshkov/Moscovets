@@ -62,7 +62,7 @@ export const useCephalometryImageHandlers = (state) => {
     });
   }, [cephalometryData.projectionType, setActiveTool, setCephalometryData]);
 
-  const handleLoadImageFromDatabase = useCallback(async (fileId) => {
+  const handleLoadImageFromDatabase = useCallback(async (fileId, projectionType = null) => {
     try {
       setLoading(true);
       const response = await localFileService.downloadFile(fileId);
@@ -80,12 +80,14 @@ export const useCephalometryImageHandlers = (state) => {
       
       const img = new Image();
       img.onload = () => {
+        const targetProjectionType = projectionType || cephalometryData.projectionType;
         setCephalometryData(prev => ({
           ...prev,
           images: {
             ...prev.images,
-            [prev.projectionType]: imageUrl
+            [targetProjectionType]: imageUrl
           },
+          projectionType: targetProjectionType,
           imageDimensions: { width: img.width, height: img.height }
         }));
         setActiveTool('scale');
@@ -97,7 +99,7 @@ export const useCephalometryImageHandlers = (state) => {
       setError('Ошибка при загрузке изображения из локального хранилища: ' + err.message);
       setLoading(false);
     }
-  }, [setCephalometryData, setActiveTool, setLoading, setShowFileLibrary, setError]);
+  }, [setCephalometryData, cephalometryData.projectionType, setActiveTool, setLoading, setShowFileLibrary, setError]);
 
   const initializeImageInfo = useCallback((img) => {
     const canvas = canvasRef.current;

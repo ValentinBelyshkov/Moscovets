@@ -31,6 +31,7 @@ class FileVersionTypeSchema(str, PyEnum):
 # Shared properties
 class FileBase(BaseModel):
     patient_id: int
+    name: str
     file_path: str
     file_type: MedicalFileTypeSchema
     description: Optional[str] = None
