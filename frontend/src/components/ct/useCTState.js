@@ -2,7 +2,9 @@ import { useState, useRef } from 'react';
 
 export const useCTState = () => {
   const [ctData, setCtData] = useState({
+    patientId: 1,
     patientName: 'Иванов Иван Иванович',
+    scanDate: new Date().toISOString().split('T')[0],
     analysisDate: new Date().toISOString().split('T')[0],
     ctScan: null,
     selectedFile: null,
@@ -11,6 +13,7 @@ export const useCTState = () => {
     selectedPlane: null,
     filePlaneAssignments: {},
     showPlaneAssignment: false,
+    storagePath: null,
     measurements: {
       rightClosedPositionX: 0,
       rightClosedPositionY: 0,

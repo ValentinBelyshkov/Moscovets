@@ -1,21 +1,67 @@
 import localMedicalRecordService from '../../services/localMedicalRecordService';
+import ctService from '../../services/ctService';
 
 export const useCTHandlers = ({ ctData, setCtData, setError, setMeasurements }) => {
+  const handleScanDateSelect = async (scanDate) => {
+    if (!scanDate) {
+      return;
+    }
+
+    try {
+      const files = await ctService.getPatientFilesByDate(ctData.patientId, scanDate);
+
+      if (files.length === 0) {
+        setError(`Нет файлов для даты сканирования ${scanDate}`);
+        return;
+      }
+
+      const filePlaneAssignments = {};
+      files.forEach(file => {
+        filePlaneAssignments[file.id] = null;
+      });
+
+      // Convert files to the expected format
+      const uploadedFiles = files.map(file => ({
+        id: file.id,
+        name: file.file_path.split('/').pop(),
+        size: file.file_size,
+        data_url: ctService.getFileUrl(file.id)
+      }));
+
+      setCtData(prev => ({
+        ...prev,
+        ctScan: `${uploadedFiles.length} DICOM файлов для сканирования от ${scanDate}`,
+        selectedFile: uploadedFiles[0],
+        uploadedFiles: uploadedFiles,
+        availablePlanes: {},
+        selectedPlane: null,
+        filePlaneAssignments: filePlaneAssignments,
+        showPlaneAssignment: true,
+        scanDate: scanDate,
+        storagePath: `patients/patient_${ctData.patientId}/dicom/${new Date(scanDate).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' })}`
+      }));
+
+      setError(null);
+    } catch (error) {
+      console.error('Error loading files by date:', error);
+      setError('Не удалось загрузить файлы для выбранной даты: ' + error.message);
+    }
+  };
   const handleArchiveUploadSuccess = (result) => {
     console.log('Archive upload successful:', result);
-    
+
     const uploadedFiles = result.uploadedFiles;
-    
+
     if (uploadedFiles.length === 0) {
       setError('Из архива не было загружено ни одного файла');
       return;
     }
-    
+
     const filePlaneAssignments = {};
     uploadedFiles.forEach(file => {
       filePlaneAssignments[file.id] = null;
     });
-    
+
     setCtData(prev => ({
       ...prev,
       ctScan: `${result.totalExtracted} DICOM файлов извлечено из архива "${result.archiveName}"`,
@@ -24,10 +70,17 @@ export const useCTHandlers = ({ ctData, setCtData, setError, setMeasurements }) 
       availablePlanes: {},
       selectedPlane: null,
       filePlaneAssignments: filePlaneAssignments,
-      showPlaneAssignment: true
+      showPlaneAssignment: true,
+      scanDate: result.scanDate || prev.scanDate,
+      storagePath: result.storagePath || null
     }));
-    
-    alert(`Успешно загружено ${result.totalExtracted} DICOM файлов из архива! Теперь вы можете назначить плоскости для каждого файла.`);
+
+    const message = `Успешно загружено ${result.totalExtracted} DICOM файлов из архива!`;
+    if (result.storagePath) {
+      alert(`${message}\n\nФайлы сохранены в: ${result.storagePath}\n\nТеперь вы можете назначить плоскости для каждого файла.`);
+    } else {
+      alert(`${message}\n\nТеперь вы можете назначить плоскости для каждого файла.`);
+    }
   };
 
   const handleArchiveUploadError = (errorMessage) => {
@@ -164,6 +217,7 @@ export const useCTHandlers = ({ ctData, setCtData, setError, setMeasurements }) 
     handleToolSelect,
     handlePlaneSelect,
     handleMeasurementComplete,
-    handleAnnotationAdd
+    handleAnnotationAdd,
+    handleScanDateSelect
   };
 };

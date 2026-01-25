@@ -3,6 +3,7 @@ import VTKViewer from '../VTKViewer';
 import ArchiveUpload from '../ArchiveUpload';
 import CTViewerControls from './CTViewerControls';
 import CTMeasurementsPanel from './CTMeasurementsPanel';
+import CTScanDateSelector from './CTScanDateSelector';
 import { useCTState } from './useCTState';
 import { useCTHandlers } from './useCTHandlers';
 import '../ArchiveUpload.css';
@@ -36,7 +37,8 @@ const CTModuleRefactored = () => {
     handleToolSelect,
     handlePlaneSelect,
     handleMeasurementComplete,
-    handleAnnotationAdd
+    handleAnnotationAdd,
+    handleScanDateSelect
   } = handlers;
 
   const handleWindowLevelChange = (type, value) => {
@@ -317,6 +319,21 @@ const CTModuleRefactored = () => {
           />
         </div>
         <div className="form-group">
+          <label>Дата сканирования:</label>
+          <input
+            type="date"
+            value={ctData.scanDate}
+            onChange={(e) => setCtData(prev => ({
+              ...prev,
+              scanDate: e.target.value
+            }))}
+            style={{ padding: '8px', marginLeft: '10px' }}
+          />
+          <span style={{ marginLeft: '10px', fontSize: '12px', color: '#666' }}>
+            Файлы будут сохранены в папку: storage/patients/patient_1/dicom/{ctData.scanDate ? new Date(ctData.scanDate).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'дата_не_выбрана'}
+          </span>
+        </div>
+        <div className="form-group">
           <label>Дата анализа:</label>
           <input
             type="date"
@@ -331,14 +348,29 @@ const CTModuleRefactored = () => {
       
       <div className="ct-upload">
         <h3>Загрузка КТ файлов</h3>
+
+        <CTScanDateSelector
+          patientId={ctData.patientId}
+          onDateSelect={handleScanDateSelect}
+          selectedDate={ctData.scanDate}
+        />
+
         <ArchiveUpload
           onUploadSuccess={handleArchiveUploadSuccess}
           onUploadError={handleArchiveUploadError}
+          patientId={ctData.patientId}
+          scanDate={ctData.scanDate}
+          enableBackendUpload={true}
         />
-        
+
         {ctData.ctScan && (
           <div className="upload-status">
             <p>{ctData.ctScan}</p>
+            {ctData.storagePath && (
+              <p style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}>
+                Путь сохранения: {ctData.storagePath}
+              </p>
+            )}
             {ctData.uploadedFiles.length > 0 && (
               <button
                 onClick={togglePlaneAssignment}

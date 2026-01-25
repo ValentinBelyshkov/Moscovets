@@ -54,6 +54,12 @@ class FileStorageService:
         
         # Создаем структуру папок
         patient_dir = self.storage_structure['patients'] / f'patient_{patient_id}' / subtype_dir
+        
+        # Добавляем дату исследования в путь для DICOM и CT файлов
+        if file_type in [MedicalFileType.DICOM, MedicalFileType.CT_SCAN] and study_date:
+            date_dir = study_date.strftime('%d.%m.%Y')
+            patient_dir = patient_dir / date_dir
+        
         patient_dir.mkdir(parents=True, exist_ok=True)
         
         # Генерируем уникальное имя файла

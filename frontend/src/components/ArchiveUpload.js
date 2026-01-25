@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import archiveService from '../services/archiveService';
+import ctService from '../services/ctService';
 
-const ArchiveUpload = ({ onUploadSuccess, onUploadError }) => {
+const ArchiveUpload = ({ onUploadSuccess, onUploadError, patientId = 1, scanDate, enableBackendUpload = false }) => {
   const [archiveFile, setArchiveFile] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [archiveInfo, setArchiveInfo] = useState(null);
@@ -72,24 +73,53 @@ const ArchiveUpload = ({ onUploadSuccess, onUploadError }) => {
       onUploadError && onUploadError('В архиве не найдено DICOM файлов');
       return;
     }
+
+    if (enableBackendUpload && !scanDate) {
+      onUploadError && onUploadError('Пожалуйста, выберите дату сканирования');
+      return;
+    }
     
     setIsProcessing(true);
     
     try {
-      const result = await archiveService.processArchiveUpload(archiveFile, 1);
+      let result;
       
-      if (result.success) {
-        onUploadSuccess && onUploadSuccess({
-          uploadedFiles: result.uploadedFiles,
-          dicomFiles: result.dicomFiles,
-          totalExtracted: result.totalExtracted,
-          archiveName: archiveFile.name
-        });
+      if (enableBackendUpload && scanDate) {
+        // Use backend CT service
+        result = await ctService.uploadCTArchive(
+          archiveFile,
+          patientId,
+          scanDate,
+          `CT Scan from ${archiveFile.name}`
+        );
         
-        // Сброс формы
-        setArchiveFile(null);
-        setArchiveInfo(null);
+        if (result.success) {
+          onUploadSuccess && onUploadSuccess({
+            uploadedFiles: result.uploadedFiles,
+            dicomFiles: result.dicomFiles,
+            totalExtracted: result.totalExtracted,
+            archiveName: archiveFile.name,
+            scanDate: scanDate,
+            storagePath: result.storagePath
+          });
+        }
+      } else {
+        // Use local archive service
+        result = await archiveService.processArchiveUpload(archiveFile, patientId);
+        
+        if (result.success) {
+          onUploadSuccess && onUploadSuccess({
+            uploadedFiles: result.uploadedFiles,
+            dicomFiles: result.dicomFiles,
+            totalExtracted: result.totalExtracted,
+            archiveName: archiveFile.name
+          });
+        }
       }
+      
+      // Сброс формы
+      setArchiveFile(null);
+      setArchiveInfo(null);
     } catch (error) {
       onUploadError && onUploadError(error.message);
     } finally {
