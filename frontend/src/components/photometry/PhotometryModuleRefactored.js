@@ -1,4 +1,5 @@
 import React, { useEffect, useCallback } from 'react';
+import { useParams } from 'react-router-dom';
 import { usePatientNavigation } from '../../hooks/usePatientNavigation';
 import { useData } from '../../contexts/DataContext';
 import FileLibrary from '../FileLibrary';
@@ -14,8 +15,10 @@ import PhotometryReport from './PhotometryReport';
 import './PhotometryModule.css';
 
 const PhotometryModuleRefactored = () => {
+  const { id } = useParams();
+  
   // Обрабатываем навигацию с данными пациента
-  usePatientNavigation();
+  usePatientNavigation(id);
   
   // State and handlers
   const state = usePhotometryState();
@@ -30,6 +33,21 @@ const PhotometryModuleRefactored = () => {
     magnifierPosition, magnifierZoom, saveStatus, setSaveStatus, canvasRef, containerRef,
     pointsListRef, imageInfoRef
   } = state;
+  
+  // Обновляем имя пациента при изменении currentPatient
+  useEffect(() => {
+    if (currentPatient && currentPatient.full_name) {
+      setPhotometryData(prev => ({
+        ...prev,
+        patientName: currentPatient.full_name
+      }));
+    } else if (currentPatient && currentPatient.name) {
+      setPhotometryData(prev => ({
+        ...prev,
+        patientName: currentPatient.name
+      }));
+    }
+  }, [currentPatient, setPhotometryData]);
   
   const {
     handleLoadImageFromDatabase, initializeImageInfo, calculateMeasurements, handleCanvasClick,
@@ -190,7 +208,7 @@ const PhotometryModuleRefactored = () => {
     });
     
     const report = {
-      patientName: photometryData.patientName,
+      patientName: currentPatient?.full_name || currentPatient?.name || photometryData.patientName,
       analysisDate: photometryData.analysisDate,
       projectionType: photometryData.projectionType,
       measurements,
@@ -222,7 +240,7 @@ const PhotometryModuleRefactored = () => {
 
       const photometryDataToSave = {
         patientId: currentPatient?.id || 1,
-        patientName: photometryData.patientName,
+        patientName: currentPatient?.full_name || currentPatient?.name || photometryData.patientName,
         analysisDate: photometryData.analysisDate,
         projectionType: photometryData.projectionType,
         measurements: photometryData.measurements,
@@ -234,7 +252,7 @@ const PhotometryModuleRefactored = () => {
       };
 
       addMeasurements('photometry', photometryData.measurements, {
-        patientName: photometryData.patientName,
+        patientName: currentPatient?.full_name || currentPatient?.name || photometryData.patientName,
         analysisDate: photometryData.analysisDate,
         projectionType: photometryData.projectionType,
         structuredData: photometryDataToSave.structuredData,

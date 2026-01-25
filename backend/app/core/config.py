@@ -21,6 +21,9 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "your-secret-key-here"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     
+    # File upload settings - Maximum file size for CT scans (500MB)
+    MAX_UPLOAD_SIZE: int = 524288000  # 500 * 1024 * 1024
+    
     class Config:
         env_file = ".env"
 

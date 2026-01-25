@@ -4,7 +4,7 @@ import localFileService from './localFileService';
 class ArchiveService {
   constructor() {
     this.supportedFormats = ['.zip', '.rar', '.7z', '.tar', '.gz'];
-    this.maxArchiveSize = 100 * 1024 * 1024; // 100MB максимальный размер архива
+    this.maxArchiveSize = 500 * 1024 * 1024; // 500MB максимальный размер архива
   }
 
   // Проверка поддерживаемого формата архива

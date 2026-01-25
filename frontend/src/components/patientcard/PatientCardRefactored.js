@@ -676,6 +676,42 @@ const PatientCardRefactored = ({ patient: patientProp, onBack }) => {
           </div>
         </div>
 
+{/* Кнопки действий */}
+        <div className="mt-6 flex flex-wrap gap-4 justify-center">
+          <button
+            className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-medium hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
+            onClick={() => navigateToModule('photometry')}
+          >
+            <span>📷</span> Фотометрия
+          </button>
+          <button
+            className="px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-medium hover:from-emerald-700 hover:to-teal-700 transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
+            onClick={() => navigateToModule('cephalometry')}
+          >
+            <span>🦴</span> Цефалометрия
+          </button>
+          <button
+            className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-medium hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
+            onClick={() => navigateToModule('ct')}
+          >
+            <span>📐</span> Просмотр КТ
+          </button>
+          <button
+            className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-medium hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
+            onClick={() => navigateToModule('biometry')}
+          >
+            <span>📐</span> Биометрия
+          </button>
+          <button
+            className="px-6 py-3 bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-xl font-medium hover:from-amber-700 hover:to-orange-700 transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
+            onClick={() => navigateToModule('modeling')}
+          >
+            <span>🖥️</span> 3D Модели
+          </button>
+        </div>
+        <br></br>
+
+
         {/* Вкладки модулей */}
         <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
           {/* Навигация по вкладкам */}
@@ -707,160 +743,12 @@ const PatientCardRefactored = ({ patient: patientProp, onBack }) => {
           <div className="p-6">
             {/* Медицинская карта */}
             {activeTab === 'overview' && (
-              <div className="space-y-6">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-xl font-bold text-gray-900">Медицинская карта</h3>
-                  <button 
-                    onClick={() => setIsEditingMedicalCard(!isEditingMedicalCard)}
-                    className="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors flex items-center gap-2"
-                  >
-                    {isEditingMedicalCard ? (
-                      <><span>❌</span> Отменить</>
-                    ) : (
-                      <><span>✏️</span> Редактировать</>
-                    )}
-                  </button>
-                </div>
-
-                {isEditingMedicalCard ? (
-                  <form onSubmit={handleMedicalCardSubmit} className="patient-card-form space-y-8 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                    <section>
-                      <h4 className="text-lg font-semibold mb-4 border-b pb-2 text-gray-800">Профиль лица</h4>
-                      
-                      <div className="space-y-6">
-                        <div>
-                          <p className="font-medium text-gray-700 mb-3">Верхняя губа:</p>
-                          <div className="flex flex-wrap gap-6">
-                            <label className="flex items-center gap-2 cursor-pointer group">
-                              <input type="radio" name="faceProfile.upperLip" value="protruding" checked={medicalCardForm.faceProfile.upperLip === 'protruding'} onChange={handleMedicalCardChange} className="w-4 h-4 text-blue-600" /> 
-                              <span className="group-hover:text-blue-600 transition-colors">Выступает</span>
-                            </label>
-                            <label className="flex items-center gap-2 cursor-pointer group">
-                              <input type="radio" name="faceProfile.upperLip" value="retracted" checked={medicalCardForm.faceProfile.upperLip === 'retracted'} onChange={handleMedicalCardChange} className="w-4 h-4 text-blue-600" /> 
-                              <span className="group-hover:text-blue-600 transition-colors">Западает</span>
-                            </label>
-                            <label className="flex items-center gap-2 cursor-pointer group">
-                              <input type="radio" name="faceProfile.upperLip" value="normal" checked={medicalCardForm.faceProfile.upperLip === 'normal'} onChange={handleMedicalCardChange} className="w-4 h-4 text-blue-600" /> 
-                              <span className="group-hover:text-blue-600 transition-colors">Правильное</span>
-                            </label>
-                          </div>
-                        </div>
-
-                        <div>
-                          <p className="font-medium text-gray-700 mb-3">Нижняя губа:</p>
-                          <div className="flex flex-wrap gap-6">
-                            <label className="flex items-center gap-2 cursor-pointer group">
-                              <input type="radio" name="faceProfile.lowerLip" value="protruding" checked={medicalCardForm.faceProfile.lowerLip === 'protruding'} onChange={handleMedicalCardChange} className="w-4 h-4 text-blue-600" /> 
-                              <span className="group-hover:text-blue-600 transition-colors">Выступает</span>
-                            </label>
-                            <label className="flex items-center gap-2 cursor-pointer group">
-                              <input type="radio" name="faceProfile.lowerLip" value="retracted" checked={medicalCardForm.faceProfile.lowerLip === 'retracted'} onChange={handleMedicalCardChange} className="w-4 h-4 text-blue-600" /> 
-                              <span className="group-hover:text-blue-600 transition-colors">Западает</span>
-                            </label>
-                            <label className="flex items-center gap-2 cursor-pointer group">
-                              <input type="radio" name="faceProfile.lowerLip" value="normal" checked={medicalCardForm.faceProfile.lowerLip === 'normal'} onChange={handleMedicalCardChange} className="w-4 h-4 text-blue-600" /> 
-                              <span className="group-hover:text-blue-600 transition-colors">Правильное</span>
-                            </label>
-                          </div>
-                        </div>
-
-                        <div>
-                          <p className="font-medium text-gray-700 mb-3">Подбородок:</p>
-                          <div className="flex flex-wrap gap-6">
-                            <label className="flex items-center gap-2 cursor-pointer group">
-                              <input type="radio" name="faceProfile.chin" value="protruding" checked={medicalCardForm.faceProfile.chin === 'protruding'} onChange={handleMedicalCardChange} className="w-4 h-4 text-blue-600" /> 
-                              <span className="group-hover:text-blue-600 transition-colors">Выступает</span>
-                            </label>
-                            <label className="flex items-center gap-2 cursor-pointer group">
-                              <input type="radio" name="faceProfile.chin" value="retracted" checked={medicalCardForm.faceProfile.chin === 'retracted'} onChange={handleMedicalCardChange} className="w-4 h-4 text-blue-600" /> 
-                              <span className="group-hover:text-blue-600 transition-colors">Западает</span>
-                            </label>
-                            <label className="flex items-center gap-2 cursor-pointer group">
-                              <input type="radio" name="faceProfile.chin" value="normal" checked={medicalCardForm.faceProfile.chin === 'normal'} onChange={handleMedicalCardChange} className="w-4 h-4 text-blue-600" /> 
-                              <span className="group-hover:text-blue-600 transition-colors">Правильное</span>
-                            </label>
-                          </div>
-                        </div>
-                      </div>
-                    </section>
-
-                    <div className="pt-6 border-t">
-                      <button type="submit" className="w-full md:w-auto px-8 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-all shadow-lg flex items-center justify-center gap-2">
-                        <span>💾</span> Сохранить и передать данные
-                      </button>
-                    </div>
-                  </form>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-                      <h4 className="text-lg font-semibold mb-4 text-blue-900 border-b pb-2 flex items-center gap-2">
-                        <span>👤</span> Общие сведения
-                      </h4>
-                      <div className="space-y-4">
-                        <div className="flex justify-between items-center">
-                          <span className="text-gray-500">Тип профиля:</span>
-                          <span className="font-semibold text-gray-900 px-3 py-1 bg-gray-50 rounded-lg">
-                            {orthodonticData?.photoAnalysis?.profile?.profileType || 'Прямой'}
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-gray-500">Верхняя губа:</span>
-                          <span className="font-semibold text-gray-900 px-3 py-1 bg-gray-50 rounded-lg">
-                            {orthodonticData?.photoAnalysis?.profile?.upperLipPosition || 'Правильное'}
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-gray-500">Нижняя губа:</span>
-                          <span className="font-semibold text-gray-900 px-3 py-1 bg-gray-50 rounded-lg">
-                            {orthodonticData?.photoAnalysis?.profile?.lowerLipPosition || 'Правильное'}
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-gray-500">Подбородок:</span>
-                          <span className="font-semibold text-gray-900 px-3 py-1 bg-gray-50 rounded-lg">
-                            {orthodonticData?.photoAnalysis?.profile?.chinPosition || 'Правильное'}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-                      <h4 className="text-lg font-semibold mb-4 text-emerald-900 border-b pb-2 flex items-center gap-2">
-                        <span>📊</span> Диагностические показатели
-                      </h4>
-                      <div className="space-y-4">
-                        <div className="flex justify-between items-center">
-                          <span className="text-gray-500">Угол SNA:</span>
-                          <span className="font-semibold text-gray-900 px-3 py-1 bg-gray-50 rounded-lg">
-                            {orthodonticData?.cephalometry?.lateralTRG?.parameters?.SNA?.value || '78.2'}°
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-gray-500">Угол SNB:</span>
-                          <span className="font-semibold text-gray-900 px-3 py-1 bg-gray-50 rounded-lg">
-                            {orthodonticData?.cephalometry?.lateralTRG?.parameters?.SNB?.value || '74.3'}°
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-gray-500">Угол ANB:</span>
-                          <span className="font-semibold text-gray-900 px-3 py-1 bg-gray-50 rounded-lg">
-                            {orthodonticData?.cephalometry?.lateralTRG?.parameters?.ANB?.value || '4.0'}°
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="md:col-span-2 bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-2xl border border-blue-100">
-                      <h4 className="text-lg font-semibold mb-3 text-blue-900 flex items-center gap-2">
-                        <span>📝</span> Заключение врача
-                      </h4>
-                      <p className="text-gray-700 leading-relaxed italic">
-                        {orthodonticData?.conclusions?.[0] || 'Скелетный I класс, нейтральный тип роста, ретрогнатия верхней и нижней челюстей.'}
-                      </p>
-                    </div>
-
-                  </div>
-                )}
+              <div>
+                {/* Медицинская форма пациента */}
+                <PatientMedicalForm
+                  formData={medicalCardForm}
+                  onChange={handleMedicalCardChange}
+                />
               </div>
             )}
 
@@ -1057,45 +945,9 @@ const PatientCardRefactored = ({ patient: patientProp, onBack }) => {
           </div>
         </div>
 
-        {/* Кнопки действий */}
-        <div className="mt-6 flex flex-wrap gap-4 justify-center">
-          <button
-            className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-medium hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
-            onClick={() => navigateToModule('photometry')}
-          >
-            <span>📷</span> Фотометрия
-          </button>
-          <button
-            className="px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-medium hover:from-emerald-700 hover:to-teal-700 transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
-            onClick={() => navigateToModule('cephalometry')}
-          >
-            <span>🦴</span> Цефалометрия
-          </button>
-          <button
-            className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-medium hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
-            onClick={() => navigateToModule('ct')}
-          >
-            <span>📐</span> Просмотр КТ
-          </button>
-          <button
-            className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-medium hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
-            onClick={() => navigateToModule('biometry')}
-          >
-            <span>📐</span> Биометрия
-          </button>
-          <button
-            className="px-6 py-3 bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-xl font-medium hover:from-amber-700 hover:to-orange-700 transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
-            onClick={() => navigateToModule('modeling')}
-          >
-            <span>🖥️</span> 3D Модели
-          </button>
-        </div>
+        
 
-        {/* Медицинская форма пациента */}
-        <PatientMedicalForm
-          formData={medicalCardForm}
-          onChange={handleMedicalCardChange}
-        />
+        
       </div>
     </div>
   );

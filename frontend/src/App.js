@@ -109,6 +109,7 @@ function AuthWrapper({ onLogin, onLogout, isLoggedIn, user }) {
           <Route path="/medical-card-generator" element={<MedicalCardGenerator />} />
           <Route path="/cephalometry" element={<CephalometryModule />} />
           <Route path="/photometry" element={<PhotometryModule />} />
+          <Route path="/photometry/:id" element={<PhotometryModule />} />
           <Route path="/ct" element={<CTModule />} />
           <Route path="/biometry" element={<BiometryModule />} />
           <Route path="/modeling" element={<ModelingModule />} />

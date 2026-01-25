@@ -135,6 +135,14 @@ async def upload_file_version(
         # Read file content
         content = await file.read()
         
+        # Check file size limit
+        file_size = len(content)
+        if file_size > settings.MAX_UPLOAD_SIZE:
+            raise HTTPException(
+                status_code=413,
+                detail=f"File too large. Must be smaller than {settings.MAX_UPLOAD_SIZE} bytes ({settings.MAX_UPLOAD_SIZE / (1024*1024):.1f} MB)"
+            )
+        
         # Create new version
         new_version = crud.file.create_new_version(
             db=db, 
@@ -336,6 +344,23 @@ async def upload_file(
                 detail=f"Invalid file type: {file_type}. Supported types: {[t.value for t in MedicalFileType]}"
             )
         
+        # Read file content first to check size
+        content = await file.read()
+        
+        # Check file size limit (especially for CT scans)
+        file_size = len(content)
+        if medical_file_type == MedicalFileType.CT_SCAN and file_size > settings.MAX_UPLOAD_SIZE:
+            raise HTTPException(
+                status_code=413,
+                detail=f"File too large. CT scans must be smaller than {settings.MAX_UPLOAD_SIZE} bytes ({settings.MAX_UPLOAD_SIZE / (1024*1024):.1f} MB)"
+            )
+        elif file_size > settings.MAX_UPLOAD_SIZE:
+            # General limit for all file types
+            raise HTTPException(
+                status_code=413,
+                detail=f"File too large. Must be smaller than {settings.MAX_UPLOAD_SIZE} bytes ({settings.MAX_UPLOAD_SIZE / (1024*1024):.1f} MB)"
+            )
+        
         # Parse study date if provided
         study_date_obj = None
         if study_date:
@@ -355,9 +380,6 @@ async def upload_file(
             study_date=study_date_obj
         )
         
-        # Read file content
-        content = await file.read()
-        
         # Create file record in database
         file_in = schemas.FileCreate(
             patient_id=patient_id,
@@ -368,7 +390,7 @@ async def upload_file(
             study_date=study_date_obj,
             body_part=body_part,
             mime_type=file.content_type,
-            file_size=len(content)
+            file_size=file_size
         )
         
         # Use CRUD to create with versioning

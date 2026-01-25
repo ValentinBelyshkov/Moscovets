@@ -18,16 +18,31 @@
 /* Grid Layout для главной области */
 .photometry-main {
   display: grid;
-  grid-template-columns: 320px 1fr 320px;
+  grid-template-columns: minmax(250px, 0.25fr) 1fr minmax(300px, 0.35fr);
   grid-template-rows: auto 1fr auto auto;
   gap: 20px;
-  max-width: 1920px;
+  max-width: 100%;
+  width: 100%;
   margin: 0 auto;
   grid-template-areas:
     "patient-info patient-info patient-info"
     "points-list canvas-area toolbar"
     "measurements measurements measurements"
     "report report report";
+}
+
+/* Ensure patient info panel takes 100% width */
+.patient-info {
+  grid-area: patient-info;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  padding: 15px 25px;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  min-width: 0; /* Allow flexing below content width */
 }
 
 /* Patient Info Panel */
@@ -55,6 +70,7 @@
   grid-template-columns: 1fr 1fr 1fr auto;
   gap: 15px;
   align-items: end;
+  width: 100%;
 }
 
 .form-group {
@@ -101,6 +117,8 @@
   transition: all 0.3s ease;
   box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .form-group button:hover {
@@ -386,6 +404,8 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
+  width: 100%; /* Ensure full width of grid cell */
+  align-items: stretch; /* Ensure child elements stretch to full width */
 }
 
 /* Toolbar */
@@ -396,7 +416,11 @@
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.3);
   overflow-y: auto;
-  max-height: calc(50vh - 150px);
+  width: 100%; /* Ensure full width */
+  box-sizing: border-box; /* Include padding in width calculation */
+  min-width: 0; /* Allow flexing below content width */
+  flex: 1 1 auto; /* Allow to grow and shrink as needed */
+  align-self: stretch; /* Ensure alignment with other flex items */
 }
 
 .toolbar h4 {
@@ -504,6 +528,11 @@
   border-radius: 15px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.3);
+  width: 100%; /* Ensure same width as toolbar */
+  box-sizing: border-box; /* Include padding in width calculation */
+  min-width: 0; /* Allow flexing below content width */
+  flex: 1 1 auto; /* Allow to grow and shrink as needed */
+  align-self: stretch; /* Ensure alignment with other flex items */
 }
 
 .toolbar-save-section {
@@ -1272,9 +1301,9 @@
     grid-template-columns: 1fr;
     grid-template-areas:
       "patient-info"
+      "points-list"
       "canvas-area"
       "toolbar"
-      "points-list"
       "measurements"
       "report";
   }
