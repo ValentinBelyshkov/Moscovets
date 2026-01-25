@@ -708,6 +708,12 @@ const PatientCardRefactored = ({ patient: patientProp, onBack }) => {
           >
             <span>🖥️</span> 3D Модели
           </button>
+          <button
+            className="px-6 py-3 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-xl font-medium hover:from-green-700 hover:to-teal-700 transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
+            onClick={() => navigate('/presentation', { state: { patient, fromPatientCard: true } })}
+          >
+            <span>📊</span> Создать презентацию
+          </button>
         </div>
         <br></br>
 
@@ -948,6 +954,66 @@ const PatientCardRefactored = ({ patient: patientProp, onBack }) => {
         
 
         
+        {/* Кнопка скачать в самом конце */}
+        <div className="mt-8 flex justify-start">
+          <button
+            className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-medium hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
+            onClick={() => {
+              const cardContent = `<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Медицинская карта - ${patient?.full_name || patient?.fullName || 'Пациент'}</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; }
+    h1 { color: #1e3a5f; }
+    .section { margin-bottom: 20px; padding: 15px; background: #f5f5f5; border-radius: 8px; }
+    .label { color: #666; font-size: 12px; }
+    .value { font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>Медицинская карта пациента</h1>
+  <div class="section">
+    <p class="label">ФИО</p>
+    <p class="value">${patient?.full_name || patient?.fullName || 'Не указано'}</p>
+  </div>
+  <div class="section">
+    <p class="label">Дата рождения</p>
+    <p class="value">${formatDate(patient?.birth_date || patient?.birthDate)}</p>
+  </div>
+  <div class="section">
+    <p class="label">Пол</p>
+    <p class="value">${patient?.gender === 'male' ? 'Мужской' : 'Женский'}</p>
+  </div>
+  <div class="section">
+    <p class="label">Телефон</p>
+    <p class="value">${patient?.contact_info || patient?.contactInfo || 'Не указано'}</p>
+  </div>
+  <div class="section">
+    <p class="label">Жалобы</p>
+    <p class="value">${patient?.complaints || 'Неровные зубы, неправильный прикус, эстетический дефект'}</p>
+  </div>
+  <p style="margin-top: 40px; color: #999; font-size: 12px;">Дата формирования: ${new Date().toLocaleDateString('ru-RU')}</p>
+</body>
+</html>`;
+              const blob = new Blob([cardContent], { type: 'text/html;charset=utf-8' });
+              const url = URL.createObjectURL(blob);
+              const link = document.createElement('a');
+              link.href = url;
+              link.download = `Медицинская_карта_${(patient?.full_name || patient?.fullName || 'Пациент').replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.html`;
+              link.click();
+              URL.revokeObjectURL(url);
+            }}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            Скачать
+          </button>
+        </div>
+
       </div>
     </div>
   );
