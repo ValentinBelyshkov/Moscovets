@@ -1,7 +1,7 @@
 import logging
 from fastapi import APIRouter
 
-from .endpoints import users, patients, medical_records, files, documents, auth, modeling, biometry
+from .endpoints import users, patients, medical_records, files, documents, auth, modeling, biometry, ct
 
 # Настройка логирования для API
 logger = logging.getLogger(__name__)
@@ -15,5 +15,6 @@ api_router.include_router(files.router, prefix="/files", tags=["files"])
 api_router.include_router(documents.router, prefix="/documents", tags=["documents"])
 api_router.include_router(modeling.router, prefix="/modeling", tags=["modeling"])
 api_router.include_router(biometry.router, prefix="/biometry", tags=["biometry"])
+api_router.include_router(ct.router, prefix="/ct", tags=["ct"])
 
 logger.info("API роутеры инициализированы, включая модули моделирования и биометрии")
