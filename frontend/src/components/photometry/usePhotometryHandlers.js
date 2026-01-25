@@ -1,6 +1,7 @@
 import { useEffect, useCallback } from 'react';
 import { toast } from 'react-toastify';
 import localFileService from '../../services/localFileService';
+import fileService from '../../services/fileService';
 import { usePointDefinitions } from './pointDefinitions';
 
 export const usePhotometryHandlers = (state) => {
@@ -41,30 +42,16 @@ export const usePhotometryHandlers = (state) => {
     toast.info('Upload functionality would be implemented here');
   };
 
-  // Load image from local storage
+  // Load image from local storage or API
   const handleLoadImageFromDatabase = async (fileId) => {
     try {
       setLoading(true);
-      const response = await localFileService.downloadFile(fileId);
-      
-      console.log('Photometry load image response:', response);
-      console.log('Response type:', typeof response);
-      console.log('Response instanceof Blob:', response instanceof Blob);
-      console.log('Response data type:', response && typeof response.data);
-      console.log('Response data instanceof Blob:', response && response.data instanceof Blob);
-      
-      let blob;
-      if (response instanceof Blob) {
-        blob = response;
-      } else if (response && response.data instanceof Blob) {
-        blob = response.data;
-      } else {
-        throw new Error('Invalid response format from downloadFile');
-      }
-      
+      // Используем fileService вместо localFileService для загрузки с сервера
+      const blob = await fileService.downloadFile(fileId);
+
       console.log('Photometry creating object URL with blob:', blob);
       const imageUrl = URL.createObjectURL(blob);
-      
+
       const img = new Image();
       img.onload = () => {
         setPhotometryData(prev => ({
@@ -81,7 +68,7 @@ export const usePhotometryHandlers = (state) => {
       };
       img.src = imageUrl;
     } catch (err) {
-      setError('Ошибка при загрузке изображения из локального хранилища: ' + err.message);
+      setError('Ошибка при загрузке изображения: ' + err.message);
       setLoading(false);
       toast.error('Failed to load image from database');
     }

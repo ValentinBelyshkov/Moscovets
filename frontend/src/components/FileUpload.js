@@ -1,17 +1,31 @@
 import React, { useState, useEffect } from 'react';
-// Используем локальный сервис вместо серверного
+// Используем локальный сервис и API сервис для работы с файлами
 import localFileService from '../services/localFileService';
+import fileService from '../services/fileService';
 
-const FileUpload = ({ onUploadSuccess }) => {
+const FileUpload = ({ onUploadSuccess, patientId: initialPatientId, initialFileType = 'photo' }) => {
   const [files, setFiles] = useState([]);
-  const [patientId, setPatientId] = useState('');
+  const [patientId, setPatientId] = useState(initialPatientId || '');
   const [description, setDescription] = useState('');
-  const [fileType, setFileType] = useState('photo');
+  const [fileType, setFileType] = useState(initialFileType);
   const [medicalCategory, setMedicalCategory] = useState('clinical');
   const [studyDate, setStudyDate] = useState(new Date().toISOString().split('T')[0]);
   const [bodyPart, setBodyPart] = useState('');
   const [uploading, setUploading] = useState(false);
   const [storageInfo, setStorageInfo] = useState({ used: 0, total: 0, percentage: 0, filesCount: 0 });
+
+  // Update patientId and fileType when props change
+  useEffect(() => {
+    if (initialPatientId) {
+      setPatientId(initialPatientId);
+    }
+  }, [initialPatientId]);
+
+  useEffect(() => {
+    if (initialFileType) {
+      setFileType(initialFileType);
+    }
+  }, [initialFileType]);
 
   // Получение информации о хранилище при монтировании компонента
   useEffect(() => {
@@ -44,23 +58,34 @@ const FileUpload = ({ onUploadSuccess }) => {
     }
 
     setUploading(true);
-    
+
     try {
-      // Загружаем все выбранные файлы
-      const uploadPromises = files.map(file =>
-        localFileService.uploadFile(file, patientId, fileType, medicalCategory, studyDate, bodyPart, description)
-      );
-      
-      const results = await Promise.all(uploadPromises);
-      
-      // Обновляем информацию о хранилище
-      const info = localFileService.getStorageInfo();
-      setStorageInfo(info);
-      
+      let results;
+
+      // Используем API сервис если указан patientId, иначе локальный сервис
+      if (patientId) {
+        // Загружаем через API на сервер
+        const uploadPromises = files.map(file =>
+          fileService.uploadFile(file, patientId, fileType, medicalCategory, studyDate, bodyPart, description)
+        );
+
+        results = await Promise.all(uploadPromises);
+      } else {
+        // Загружаем в локальное хранилище
+        const uploadPromises = files.map(file =>
+          localFileService.uploadFile(file, patientId, fileType, medicalCategory, studyDate, bodyPart, description)
+        );
+
+        results = await Promise.all(uploadPromises);
+
+        // Обновляем информацию о хранилище только для локального хранилища
+        const info = localFileService.getStorageInfo();
+        setStorageInfo(info);
+      }
+
       alert(`Успешно загружено ${results.length} файлов!`);
       onUploadSuccess && onUploadSuccess(results);
       setFiles([]);
-      setPatientId('');
       setDescription('');
     } catch (error) {
       console.error('File upload error:', error);
@@ -116,6 +141,7 @@ const FileUpload = ({ onUploadSuccess }) => {
           >
             <option value="photo">Фото</option>
             <option value="ct_scan">КТ</option>
+            <option value="mri">МРТ</option>
             <option value="stl_model">STL модель</option>
             <option value="xray">Рентген</option>
             <option value="other">Другое</option>

@@ -461,7 +461,12 @@ const PhotometryModuleRefactored = () => {
         {showFileLibrary && (
           <div className="modal-overlay">
             <div className="modal-content">
-              <FileLibrary onSelectFile={handleLoadImageFromDatabase} onClose={() => setShowFileLibrary(false)} />
+              <FileLibrary
+                onSelectFile={handleLoadImageFromDatabase}
+                onClose={() => setShowFileLibrary(false)}
+                patientId={id}
+                fileType="mri"
+              />
               <button onClick={() => setShowFileLibrary(false)} style={{ marginTop: '10px' }}>
                 Закрыть
               </button>
