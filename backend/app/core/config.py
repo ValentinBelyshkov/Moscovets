@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite:///./moskovets3d.db"
 
     # CORS settings
-    BACKEND_CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:3001"]
+    BACKEND_CORS_ORIGINS: str = "http://localhost:3000,http://localhost:3001"
 
     # Security settings
     SECRET_KEY: str = "your-secret-key-here"
@@ -26,6 +26,12 @@ class Settings(BaseSettings):
 
     # Storage settings
     STORAGE_PATH: str = "storage"
+
+    def get_cors_origins(self) -> List[str]:
+        """Parse BACKEND_CORS_ORIGINS from comma-separated string."""
+        if isinstance(self.BACKEND_CORS_ORIGINS, list):
+            return [str(origin) for origin in self.BACKEND_CORS_ORIGINS]
+        return [origin.strip() for origin in self.BACKEND_CORS_ORIGINS.split(",") if origin.strip()]
 
     class Config:
         env_file = ".env"
