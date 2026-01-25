@@ -7,7 +7,7 @@ const getApiBaseUrl = () => {
     return window._env_.REACT_APP_URL_API + '/api/v1';
   }
   // Fallback to build-time environment variable
-  return process.env.REACT_APP_URL_API || '/api/v1';
+  return process.env.REACT_APP_URL_API || 'http://109.196.102.193:5001/api/v1';
 };
 
 const API_BASE_URL = getApiBaseUrl();
