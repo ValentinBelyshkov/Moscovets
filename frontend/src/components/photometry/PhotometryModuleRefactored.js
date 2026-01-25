@@ -369,6 +369,11 @@ const PhotometryModuleRefactored = () => {
           <h3>Фотографии</h3>
           <div className="image-container">
             <div className="canvas-container" ref={containerRef}>
+              {!photometryData.images[photometryData.projectionType] && (
+                <div className="photo-placeholder">
+                  <p>Выберите фото</p>
+                </div>
+              )}
               <canvas
                 ref={canvasRef}
                 onClick={handleCanvasClick}
@@ -377,6 +382,7 @@ const PhotometryModuleRefactored = () => {
                 onMouseUp={handleCanvasMouseUp}
                 onMouseLeave={handleCanvasMouseLeave}
                 onContextMenu={handleCanvasContextMenu}
+                style={{ display: photometryData.images[photometryData.projectionType] ? 'block' : 'none' }}
               />
               {selectedPoint && (
                 <button 
@@ -408,6 +414,14 @@ const PhotometryModuleRefactored = () => {
             showAngles={showAngles}
             setShowAngles={setShowAngles}
           />
+
+          <div className="toolbar-save-section">
+            <button onClick={handleSave} className="save-measurements-btn">
+              Сохранить измерения
+              {saveStatus.isSaving && <span className="loading-indicator">...</span>}
+            </button>
+            {saveStatus.success && <span className="save-success">✅ Данные сохранены!</span>}
+          </div>
         </div>
         
         <PhotometryMeasurementsPanel
@@ -422,14 +436,6 @@ const PhotometryModuleRefactored = () => {
           exportReportAsPPTX={exportReportAsPPTX}
           hasMeasurements={Object.keys(photometryData.measurements).length > 0}
         />
-        
-        <div className="actions">
-          <button onClick={handleSave}>
-            Сохранить измерения
-            {saveStatus.isSaving && <span className="loading-indicator">...</span>}
-          </button>
-          {saveStatus.success && <span className="save-success">✅ Данные сохранены!</span>}
-        </div>
         
         {loading && <div className="loading">Обработка...</div>}
         {error && <div className="error">{error}</div>}
