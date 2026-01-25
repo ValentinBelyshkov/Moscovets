@@ -28,8 +28,18 @@ import './components/CTModule.css';
 import './components/BiometryModule.css';
 import './components/ModelingModule.css';
 
+// Use runtime configuration with fallback to build-time environment variable
+const getApiBaseUrl = () => {
+  // First try runtime config (from env-config.js)
+  if (typeof window !== 'undefined' && window._env_ && window._env_.REACT_APP_URL_API) {
+    return window._env_.REACT_APP_URL_API;
+  }
+  // Fallback to build-time environment variable
+  return process.env.REACT_APP_URL_API || 'http://109.196.102.193:5001';
+};
+
 // Глобальная настройка для API запросов
-export const API_BASE_URL = '/api/v1';
+export const API_BASE_URL = `${getApiBaseUrl()}/api/v1`;
 
 // Компонент для проверки аутентификации
 function ProtectedRoute({ isLoggedIn, children }) {
@@ -177,7 +187,7 @@ function App() {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-    fetch('/api/v1/auth/me', {
+    fetch(`${API_BASE_URL}/auth/me`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

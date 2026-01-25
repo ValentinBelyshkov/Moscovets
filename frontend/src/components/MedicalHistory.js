@@ -4,13 +4,13 @@ import React, { useState, useEffect } from 'react';
 const getApiBaseUrl = () => {
   // First try runtime config (from env-config.js)
   if (typeof window !== 'undefined' && window._env_ && window._env_.REACT_APP_URL_API) {
-    return window._env_.REACT_APP_URL_API + '/api/v1';
+    return window._env_.REACT_APP_URL_API;
   }
   // Fallback to build-time environment variable
-  return process.env.REACT_APP_URL_API || 'http://109.196.102.193:5001/api/v1';
+  return process.env.REACT_APP_URL_API || 'http://109.196.102.193:5001';
 };
 
-const API_BASE_URL = getApiBaseUrl();
+const API_BASE_URL = `${getApiBaseUrl()}/api/v1`;
 
 const MedicalHistory = ({ patientId }) => {
   const [medicalHistory, setMedicalHistory] = useState([]);

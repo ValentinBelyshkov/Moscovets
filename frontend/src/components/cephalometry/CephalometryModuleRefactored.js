@@ -16,6 +16,18 @@ import CephalometryPhotoSelection from '../CephalometryPhotoSelection';
 import FileLibrary from '../FileLibrary';
 import '../CephalometryModule.css';
 
+// Use runtime configuration with fallback to build-time environment variable
+const getApiBaseUrl = () => {
+  // First try runtime config (from env-config.js)
+  if (typeof window !== 'undefined' && window._env_ && window._env_.REACT_APP_URL_API) {
+    return window._env_.REACT_APP_URL_API;
+  }
+  // Fallback to build-time environment variable
+  return process.env.REACT_APP_URL_API || 'http://109.196.102.193:5001';
+};
+
+const API_BASE_URL = `${getApiBaseUrl()}/api/v1`;
+
 const CephalometryModuleRefactored = () => {
   const { id } = useParams();
   
@@ -71,7 +83,7 @@ const CephalometryModuleRefactored = () => {
         const token = localStorage.getItem('token');
         if (!token) return;
 
-        const response = await fetch(`/api/v1/files/patient/${id}/files?file_type=panoramic`, {
+        const response = await fetch(`${API_BASE_URL}/files/patient/${id}/files?file_type=panoramic`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -83,7 +95,7 @@ const CephalometryModuleRefactored = () => {
           if (files && files.length > 0) {
             // Load first panoramic photo for lateral projection
             const firstFile = files[0];
-            const downloadResponse = await fetch(`/api/v1/files/download/${firstFile.id}`, {
+            const downloadResponse = await fetch(`${API_BASE_URL}/files/download/${firstFile.id}`, {
               headers: {
                 'Authorization': `Bearer ${token}`
               }
