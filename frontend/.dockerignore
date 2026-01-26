@@ -11,3 +11,11 @@ README.md
 coverage
 .DS_Store
 .vscode
+build/
+dist/
+out/
+.nyc_output/
+logs/
+*.log
+.env.docker
+.env.production

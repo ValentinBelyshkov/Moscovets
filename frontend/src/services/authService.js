@@ -7,14 +7,14 @@ const getApiBaseUrl = () => {
     return window._env_.REACT_APP_URL_API;
   }
   // Fallback to build-time environment variable
-  return process.env.REACT_APP_URL_API || 'http://109.196.102.193:5001';
+  return  'http://109.196.102.193:5001';
 };
 
-const API_BASE_URL = getApiBaseUrl();
+const API_BASE_URL = 'http://109.196.102.193:5001/api';
 
 class AuthService {
   constructor() {
-    this.baseUrl = `${API_BASE_URL}/api/v1/auth`;
+    this.baseUrl = `${API_BASE_URL}/v1/auth`;
   }
 
   // Получение заголовков с авторизацией

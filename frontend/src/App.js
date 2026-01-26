@@ -39,7 +39,7 @@ const getApiBaseUrl = () => {
 };
 
 // Глобальная настройка для API запросов
-export const API_BASE_URL = `${getApiBaseUrl()}/api/v1`;
+export const API_BASE_URL = 'http://109.196.102.193:5001/api/v1';
 
 // Компонент для проверки аутентификации
 function ProtectedRoute({ isLoggedIn, children }) {

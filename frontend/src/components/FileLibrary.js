@@ -16,7 +16,7 @@ const getApiBaseUrl = () => {
   return process.env.REACT_APP_URL_API || 'http://109.196.102.193:5001';
 };
 
-const API_BASE_URL = `${getApiBaseUrl()}/api/v1`;
+const API_BASE_URL = 'http://109.196.102.193:5001';
 
 const FileLibrary = ({ onSelectFile, onClose, patientId, fileType }) => {
   const [files, setFiles] = useState([]);
