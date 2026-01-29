@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import fileService from '../../services/fileService';
+import { getApiBaseUrl } from '../../config/api';
 
 export const usePatientCardHandlers = (patient, medicalCardData) => {
   // Функция для загрузки данных фотометрии
@@ -47,16 +48,6 @@ export const usePatientCardHandlers = (patient, medicalCardData) => {
 
       // 4. Загружаем фотофайлы из бэкенда если нет обработанных данных
       try {
-        // Use runtime configuration with fallback to build-time environment variable
-        const getApiBaseUrl = () => {
-          // First try runtime config (from env-config.js)
-          if (typeof window !== 'undefined' && window._env_ && window._env_.REACT_APP_URL_API) {
-            return window._env_.REACT_APP_URL_API;
-          }
-          // Fallback to build-time environment variable
-          return process.env.REACT_APP_URL_API || 'http://109.196.102.193:5001';
-        };
-        
         const baseUrl = getApiBaseUrl();
         const response = await fetch(`${baseUrl}/api/v1/files/patient/${patientId}/files?file_type=photo`, {
           headers: {

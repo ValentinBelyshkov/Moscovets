@@ -15,6 +15,7 @@ import BiometryModule from './components/BiometryModule';
 import ModelingModule from './components/ModelingModule';
 import FileTransferDemo from './components/FileTransferDemo';
 import { DataProvider } from './contexts/DataContext';
+import { getApiBaseUrl } from './config/api';
 import './components/Login.css';
 import './components/Dashboard.css';
 import './components/PatientDirectory.css';
@@ -28,18 +29,8 @@ import './components/CTModule.css';
 import './components/BiometryModule.css';
 import './components/ModelingModule.css';
 
-// Use runtime configuration with fallback to build-time environment variable
-const getApiBaseUrl = () => {
-  // First try runtime config (from env-config.js)
-  if (typeof window !== 'undefined' && window._env_ && window._env_.REACT_APP_URL_API) {
-    return window._env_.REACT_APP_URL_API;
-  }
-  // Fallback to build-time environment variable
-  return process.env.REACT_APP_URL_API || 'http://109.196.102.193:5001';
-};
-
 // Глобальная настройка для API запросов
-export const API_BASE_URL = 'http://109.196.102.193:5001/api/v1';
+export const API_BASE_URL = `${getApiBaseUrl()}/api/v1`;
 
 // Компонент для проверки аутентификации
 function ProtectedRoute({ isLoggedIn, children }) {

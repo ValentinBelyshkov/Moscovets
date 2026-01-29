@@ -4,9 +4,10 @@ import { ModelViewer } from "./ModelViewer";
 import { MapViewer } from "./MapViewer";
 import { ConfigPanel } from "./ConfigPanel";
 import { biometryApi } from "../services/biometryApi";
+import { getApiBaseUrl } from "../config/api";
 import type { MapPoint, ModelPoint, Pair, StatusResponse } from "../types";
 
-const apiBase = import.meta.env.VITE_API_BASE_URL ?? "http://109.196.102.193:5001";
+const apiBase = getApiBaseUrl();
 
 function BiometryApp() {
   const [modelUrl, setModelUrl] = useState<string>();

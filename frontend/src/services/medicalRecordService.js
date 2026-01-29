@@ -1,20 +1,9 @@
 // Сервис для работы с медицинскими записями через API
-
-// Use runtime configuration with fallback to build-time environment variable
-const getApiBaseUrl = () => {
-  // First try runtime config (from env-config.js)
-  if (typeof window !== 'undefined' && window._env_ && window._env_.REACT_APP_URL_API) {
-    return window._env_.REACT_APP_URL_API;
-  }
-  // Fallback to build-time environment variable
-  return process.env.REACT_APP_URL_API || 'http://109.196.102.193:5001';
-};
-
-const API_BASE_URL = 'http://109.196.102.193:5001';
+import { getApiBaseUrl } from '../config/api';
 
 class MedicalRecordService {
   constructor() {
-    this.baseUrl = `${API_BASE_URL}/api/v1/medical-records`;
+    this.baseUrl = `${getApiBaseUrl()}/api/v1/medical-records`;
   }
 
   // Получение заголовков с авторизацией
