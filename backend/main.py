@@ -62,11 +62,6 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Добавляем middleware для логирования запросов
-app.add_middleware(LoggingMiddleware)
-
-logger.info("FastAPI application starting...")
-
 # Set all CORS enabled origins
 if settings.BACKEND_CORS_ORIGINS:
     app.add_middleware(
@@ -78,6 +73,9 @@ if settings.BACKEND_CORS_ORIGINS:
     )
     
     logger.info(f"CORS middleware configured for origins: {settings.get_cors_origins()}")
+
+# Добавляем middleware для логирования запросов
+app.add_middleware(LoggingMiddleware)
 
 # Включаем роутеры API
 logger.info("Including API routers...")
