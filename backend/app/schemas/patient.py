@@ -9,6 +9,11 @@ class PatientBase(BaseModel):
     birth_date: date
     gender: Gender
     contact_info: Optional[str] = None
+    complaints: Optional[str] = None
+    medical_card_number: Optional[str] = None
+    address: Optional[str] = None
+    emergency_contact: Optional[str] = None
+    insurance_info: Optional[str] = None
     
     @field_validator('birth_date', mode='before')
     @classmethod

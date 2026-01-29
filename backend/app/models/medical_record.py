@@ -6,8 +6,12 @@ from enum import Enum as PyEnum
 from app.models.patient import Patient
 
 class MedicalRecordType(PyEnum):
-    CEPHALOMETRY = "cephalometry"
-    CT = "ct"
+    CEPHALOMETRY = "cephalometry"  # Цефалометрический анализ
+    CT = "ct"  # КТ анализ
+    PHOTOMETRY = "photometry"  # Фотометрический анализ
+    BIOMETRY = "biometry"  # Биометрический анализ
+    MODELING = "modeling"  # 3D моделирование
+    ANAMNESIS = "anamnesis"  # Анамнез пациента
 
 class MedicalRecordHistory(Base):
     __tablename__ = "medical_record_history"

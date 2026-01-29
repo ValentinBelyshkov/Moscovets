@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date, DateTime, Enum
+from sqlalchemy import Column, Integer, String, Date, DateTime, Enum, Text
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.base import Base
@@ -12,11 +12,21 @@ class Gender(PyEnum):
 class Patient(Base):
     __tablename__ = "patients"
     
+    # Основные поля
     id: int = Column(Integer, primary_key=True, index=True)
     full_name: str = Column(String, nullable=False)
     birth_date: Date = Column(Date, nullable=False)
     gender: Gender = Column(Enum(Gender, name="gender"), nullable=False)
     contact_info: str = Column(String, nullable=True)
+    
+    # Дополнительные поля для медицинской карты
+    complaints: str = Column(Text, nullable=True)  # Жалобы пациента
+    medical_card_number: str = Column(String(50), unique=True, index=True, nullable=True)  # Номер медицинской карты
+    address: str = Column(Text, nullable=True)  # Адрес пациента
+    emergency_contact: str = Column(Text, nullable=True)  # Контакт для экстренных случаев
+    insurance_info: str = Column(Text, nullable=True)  # Информация о страховке
+    
+    # Временные метки
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now(), nullable=False)
     
