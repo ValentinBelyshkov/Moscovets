@@ -21,14 +21,18 @@ from app.models.modeling import ThreeDModel, ModelingSession
 
 def recreate_database():
     """Пересоздает базу данных"""
-    print("Удаление старой базы данных...")
-    if os.path.exists("moskovets3d.db"):
-        os.remove("moskovets3d.db")
+    print(f"Инициализация базы данных ({settings.DATABASE_URL})...")
     
-    print("Создание новой базы данных...")
+    # Для PostgreSQL мы не можем просто удалить файл, 
+    # но мы можем удалить все таблицы
+    print("Удаление существующих таблиц...")
+    Base.metadata.drop_all(bind=engine)
+    
+    print("Создание новых таблиц...")
     Base.metadata.create_all(bind=engine)
     
     print("База данных успешно создана!")
 
 if __name__ == "__main__":
+    from app.core.config import settings
     recreate_database()
