@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
 
     # Database settings
-    DATABASE_URL: str = "sqlite:///./moskovets3d.db"
+    DATABASE_URL: str = "postgresql://moskovets3d:moskovets3d@localhost:5432/moskovets3d"
 
     # CORS settings
     BACKEND_CORS_ORIGINS: str = "http://localhost:3000,http://localhost:3001"

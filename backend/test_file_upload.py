@@ -11,7 +11,7 @@ def test_file_creation():
     """Test creating a file record to verify the schema works correctly"""
     
     # Create database engine
-    engine = create_engine(settings.DATABASE_URL, connect_args={"check_same_thread": False})
+    engine = create_engine(settings.DATABASE_URL)
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     
     # Test creating a file record
