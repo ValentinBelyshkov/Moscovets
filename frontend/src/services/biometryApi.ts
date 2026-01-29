@@ -1,20 +1,9 @@
 import axios from "axios";
 import type { MapPoint, ModelPoint, ObjUploadResponse, Pair, StatusResponse } from "../types";
-
-// Define the API base URL using the environment variable
-const getApiBaseUrl = () => {
-  // First try runtime config (from env-config.js)
-  if (typeof window !== 'undefined' && (window as any)._env_ && (window as any)._env_.REACT_APP_URL_API) {
-    return (window as any)._env_.REACT_APP_URL_API;
-  }
-  // Fallback to build-time environment variable
-  return process.env.REACT_APP_URL_API || "http://109.196.102.193:5001";
-};
-
-const apiBase = getApiBaseUrl();
+import { getApiBaseUrl } from "../config/api";
 
 const client = axios.create({
-  baseURL: apiBase,
+  baseURL: getApiBaseUrl(),
 });
 
 export const biometryApi = {
