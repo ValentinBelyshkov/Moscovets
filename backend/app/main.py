@@ -14,9 +14,6 @@ app = FastAPI(
     openapi_url=f"{settings.API_V1_STR}/openapi.json"
 )
 
-# Добавляем middleware для логирования запросов
-app.add_middleware(LoggingMiddleware)
-
 # Set all CORS enabled origins
 if settings.BACKEND_CORS_ORIGINS:
     app.add_middleware(
@@ -26,6 +23,9 @@ if settings.BACKEND_CORS_ORIGINS:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+# Добавляем middleware для логирования запросов
+app.add_middleware(LoggingMiddleware)
 
 # Настройка обработчиков исключений
 setup_exception_handlers(app)
