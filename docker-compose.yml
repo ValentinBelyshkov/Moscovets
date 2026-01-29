@@ -11,7 +11,7 @@ services:
       - ./backend/logs:/app/backend/logs
     environment:
       - DATABASE_URL=postgresql://moskovets3d:moskovets3d@db:5432/moskovets3d
-      - BACKEND_CORS_ORIGINS=http://localhost:3000,http://localhost:3001,http://109.196.102.193:3630
+      - BACKEND_CORS_ORIGINS=http://localhost:3000,http://localhost:3001,http://109.196.102.193:3630,http://localhost:3630
     depends_on:
       db:
         condition: service_healthy
@@ -32,7 +32,7 @@ services:
       - ./frontend:/app
       - /app/node_modules  # Avoid overriding node_modules
     environment:
-      - REACT_APP_URL_API=http://109.196.102.193:5001
+      - REACT_APP_URL_API=http://localhost:5001
       - CHOKIDAR_USEPOLLING=true
     depends_on:
       backend:

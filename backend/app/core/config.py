@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "postgresql://moskovets3d:moskovets3d@localhost:5432/moskovets3d"
 
     # CORS settings
-    BACKEND_CORS_ORIGINS: str = "http://localhost:3000,http://localhost:3001"
+    BACKEND_CORS_ORIGINS: str = "http://localhost:3000,http://localhost:3001,http://localhost:3630"
 
     # Security settings
     SECRET_KEY: str = "your-secret-key-here"
