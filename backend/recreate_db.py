@@ -12,12 +12,25 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from app.db.base import Base
 from app.db.session import engine
+
+# Импортируем все модели для создания таблиц
 from app.models.user import User
 from app.models.patient import Patient
-from app.models.medical_record import MedicalRecord
-from app.models.file import File
+from app.models.medical_record import MedicalRecord, MedicalRecordHistory
+from app.models.file import File, FileVersion
 from app.models.document import Document
 from app.models.modeling import ThreeDModel, ModelingSession
+from app.models.biometry import BiometryModel, BiometrySession
+
+# Новые модели для анализов
+from app.models.photometry import PhotometryAnalysis
+from app.models.cephalometry import CephalometryAnalysis
+from app.models.ct_analysis import CTAnalysis
+
+# Новые модели для медицинской карты
+from app.models.anamnesis import Anamnesis
+from app.models.diagnosis import Diagnosis
+from app.models.treatment_plan import TreatmentPlan
 
 def recreate_database():
     """Пересоздает базу данных"""
