@@ -19,6 +19,7 @@ ENV/
 
 # Logs and databases
 *.log
+logs/
 instance/
 *.sqlite3
 *.db
