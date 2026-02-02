@@ -1,6 +1,11 @@
 // Runtime environment configuration
 window._env_ = window._env_ || {};
 
+// Default fallback if no environment variable is set
+if (!window._env_.REACT_APP_URL_API) {
+  window._env_.REACT_APP_URL_API = 'http://localhost:5001';
+}
+
 // Allow overriding from query parameters for testing
 const urlParams = new URLSearchParams(window.location.search);
 if (urlParams.get('api_url')) {

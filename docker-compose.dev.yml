@@ -1,4 +1,4 @@
-name: moskovets3d
+name: moskovets3d-dev
 
 services:
   backend:

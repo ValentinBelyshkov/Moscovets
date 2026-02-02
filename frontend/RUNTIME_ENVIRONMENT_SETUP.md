@@ -29,7 +29,7 @@ Updated to pass the correct environment variable to the frontend container:
 ```yaml
 frontend:
   environment:
-    - REACT_APP_URL_API=http://backend:5001  # Use service name for internal communication
+    - REACT_APP_URL_API=http://localhost:5001  # Use service name for internal communication
 ```
 
 ## Usage
@@ -49,13 +49,13 @@ REACT_APP_URL_API=http://your-backend-server:5001 docker-compose up
 
 # Or in docker-compose.yml
 environment:
-  - REACT_APP_URL_API=http://backend:5001
+  - REACT_APP_URL_API=http://localhost:5001
 ```
 
 ### Testing Different URLs
 You can also override the API URL by adding a query parameter:
 ```
-http://your-app/?api_url=http://different-backend:5001
+http://your-app/?api_url=http://different-localhost:5001
 ```
 
 ## Files Modified

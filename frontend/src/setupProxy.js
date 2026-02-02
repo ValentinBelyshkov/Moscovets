@@ -8,7 +8,7 @@ module.exports = function(app) {
   if (!target) {
     throw new Error(
       'REACT_APP_URL_API не настроен. Пожалуйста, установите переменную окружения REACT_APP_URL_API.\n' +
-      'Например: REACT_APP_URL_API=http://backend:5001 (для Docker) или REACT_APP_URL_API=http://localhost:8000 (для локальной разработки)'
+      'Например: REACT_APP_URL_API=http://localhost:5001 (для Docker) или REACT_APP_URL_API=http://localhost:8000 (для локальной разработки)'
     );
   }
   

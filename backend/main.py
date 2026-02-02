@@ -63,16 +63,13 @@ app = FastAPI(
 )
 
 # Set all CORS enabled origins
-if settings.BACKEND_CORS_ORIGINS:
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=settings.get_cors_origins(),
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
-    
-    logger.info(f"CORS middleware configured for origins: {settings.get_cors_origins()}")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.get_cors_origins(),  # Use origins from config
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Добавляем middleware для логирования запросов
 app.add_middleware(LoggingMiddleware)

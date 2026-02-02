@@ -30,11 +30,18 @@ class Patient(Base):
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now(), nullable=False)
     
-    def __init__(self, full_name: str, birth_date: Date, gender: Gender, contact_info: str = ""):
+    def __init__(self, full_name: str, birth_date: Date, gender: Gender, contact_info: str = "", complaints: str = None, 
+                 medical_card_number: str = None, address: str = None, emergency_contact: str = None, 
+                 insurance_info: str = None, **kwargs):
         self.full_name = full_name
         self.birth_date = birth_date
         self.gender = gender
         self.contact_info = contact_info
+        self.complaints = complaints
+        self.medical_card_number = medical_card_number
+        self.address = address
+        self.emergency_contact = emergency_contact
+        self.insurance_info = insurance_info
 
 # Добавляем relationship вручную после определения класса
 Patient.three_d_models = relationship("ThreeDModel", back_populates="patient")
