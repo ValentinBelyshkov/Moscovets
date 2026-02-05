@@ -133,47 +133,170 @@ const PatientCardRefactored = ({ patient: patientProp, onBack }) => {
   }, [setMedicalCardForm]);
 
   // Сохранение медицинской карты
-  const handleMedicalCardSubmit = useCallback((e) => {
-    if (e) e.preventDefault();
-    console.log('Saving medical card data:', medicalCardForm);
-    
-    // Обновляем локальные данные для немедленного отображения
-    setOrthodonticData(prev => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        photoAnalysis: {
-          ...prev.photoAnalysis,
-          profile: {
-            ...prev.photoAnalysis?.profile,
-            upperLipPosition: medicalCardForm.faceProfile.upperLip === 'normal' ? 'правильное' : 
-                              medicalCardForm.faceProfile.upperLip === 'protruding' ? 'выступает' : 'западает',
-            lowerLipPosition: medicalCardForm.faceProfile.lowerLip === 'normal' ? 'правильное' :
-                              medicalCardForm.faceProfile.lowerLip === 'protruding' ? 'выступает' : 'западает',
-            chinPosition: medicalCardForm.faceProfile.chin === 'normal' ? 'правильное' :
-                          medicalCardForm.faceProfile.chin === 'protruding' ? 'выступает' : 'западает',
-          }
-        }
+  const handleMedicalCardSubmit = useCallback(async (formData) => {
+    console.log('Saving medical card data:', formData);
+
+    try {
+      // Формируем дату рождения из полей формы
+      let birthDate = patient?.birth_date;
+      if (formData.birthDay && formData.birthMonth && formData.birthYear) {
+        const day = formData.birthDay.padStart(2, '0');
+        const month = formData.birthMonth.padStart(2, '0');
+        birthDate = `${formData.birthYear}-${month}-${day}`;
+      }
+
+      // Маппинг значений формы в значения API
+      const maritalStatusMap = {
+        'married': 'registered_marriage',
+        'unregistered': 'unregistered_marriage',
+        'single': 'not_married',
+        'unknown': 'unknown'
       };
-    });
-    
-    setIsEditingMedicalCard(false);
-  }, [medicalCardForm, setOrthodonticData, setIsEditingMedicalCard]);
+
+      const educationMap = {
+        'higher': 'higher',
+        'incomplete_higher': 'incomplete_higher',
+        'secondary': 'secondary',
+        'basic': 'primary',
+        'none': 'none',
+        'unknown': 'unknown'
+      };
+
+      const chinShiftMap = {
+        'Вправо': 'right',
+        'Влево': 'left',
+        '': 'none'
+      };
+
+      const lipPositionMap = {
+        'protruding': 'protrudes',
+        'retracted': 'recedes',
+        'normal': 'correct'
+      };
+
+      // Преобразуем данные формы в формат API
+      const patientData = {
+        full_name: formData.fullName || patient?.full_name,
+        birth_date: birthDate,
+        gender: formData.gender || patient?.gender,
+        contact_info: formData.registration?.phone || patient?.contact_info,
+        complaints: patient?.complaints,
+
+        // Регистрационные данные
+        registration_republic: formData.registration?.republic || undefined,
+        registration_district: formData.registration?.region || undefined,
+        registration_city: formData.registration?.city || undefined,
+        registration_settlement: formData.registration?.settlement || undefined,
+        registration_street: formData.registration?.street || undefined,
+        registration_house: formData.registration?.house || undefined,
+        registration_apartment: formData.registration?.apartment || undefined,
+        registration_phone: formData.registration?.phone || undefined,
+
+        // Социально-демографические данные
+        locality_type: formData.locality || undefined,
+        marital_status: formData.maritalStatus ? maritalStatusMap[formData.maritalStatus] || undefined : undefined,
+        education_level: formData.education ? educationMap[formData.education] || undefined : undefined,
+
+        // Кефалометрические данные
+        cephalometry_zy_zy: formData.faceFront?.width ? parseFloat(formData.faceFront.width) : undefined,
+        cephalometry_n_me: formData.faceFront?.heightNasal ? parseFloat(formData.faceFront.heightNasal) : undefined,
+        cephalometry_n_sn: formData.faceFront?.heightSubnasal ? parseFloat(formData.faceFront.heightSubnasal) : undefined,
+        face_symmetric: formData.faceFront?.symmetry === 'Да',
+        chin_shift: formData.faceFront?.chinPosition ? chinShiftMap[formData.faceFront.chinPosition] || undefined : undefined,
+        mental_fold_pronounced: formData.faceFront?.nasolabialFold === 'Да',
+        lips_closed: formData.faceFront?.lipClosure === 'Да',
+        gummy_smile: formData.faceFront?.gumSmile === 'Да',
+        profile_type: formData.faceProfile?.type || undefined,
+        upper_lip_position: formData.faceProfile?.upperLip ? lipPositionMap[formData.faceProfile.upperLip] || undefined : undefined,
+      };
+
+      // Убираем undefined значения
+      Object.keys(patientData).forEach(key => {
+        if (patientData[key] === undefined) {
+          delete patientData[key];
+        }
+      });
+
+      console.log('Sending patient data to API:', patientData);
+
+      // Отправляем данные на сервер
+      const updatedPatient = await patientService.updatePatient(patient.id, patientData);
+      console.log('Patient updated successfully:', updatedPatient);
+
+      // Обновляем состояние пациента
+      setPatient(updatedPatient);
+
+      // Обновляем orthodonticData для немедленного отображения
+      setOrthodonticData(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          photoAnalysis: {
+            ...prev.photoAnalysis,
+            profile: {
+              ...prev.photoAnalysis?.profile,
+              upperLipPosition: formData.faceProfile?.upperLip === 'normal' ? 'правильное' :
+                                formData.faceProfile?.upperLip === 'protruding' ? 'выступает' : 'западает',
+              lowerLipPosition: formData.faceProfile?.lowerLip === 'normal' ? 'правильное' :
+                                formData.faceProfile?.lowerLip === 'protruding' ? 'выступает' : 'западает',
+              chinPosition: formData.faceProfile?.chin === 'normal' ? 'правильное' :
+                            formData.faceProfile?.chin === 'protruding' ? 'выступает' : 'западает',
+            }
+          }
+        };
+      });
+
+      setIsEditingMedicalCard(false);
+      alert('Данные медицинской карты успешно сохранены!');
+    } catch (error) {
+      console.error('Error saving medical card:', error);
+      alert('Ошибка при сохранении данных: ' + (error.message || 'Неизвестная ошибка'));
+    }
+  }, [medicalCardForm, patient, setPatient, setOrthodonticData, setIsEditingMedicalCard]);
 
   // Обновляем форму при загрузке данных
   useEffect(() => {
-    if (patient && !isEditingMedicalCard) {
+    if (patient) {
       // Populate form with patient data
       const birthDate = patient?.birth_date || patient?.birthDate;
       let birthDay = '', birthMonth = '', birthYear = '';
-      
+
       if (birthDate) {
         const date = new Date(birthDate);
         birthDay = date.getDate().toString();
         birthMonth = (date.getMonth() + 1).toString();
         birthYear = date.getFullYear().toString();
       }
-      
+
+      // Маппинг значений из API в значения формы
+      const maritalStatusReverseMap = {
+        'registered_marriage': 'married',
+        'unregistered_marriage': 'unregistered',
+        'not_married': 'single',
+        'unknown': 'unknown'
+      };
+
+      const educationReverseMap = {
+        'higher': 'higher',
+        'incomplete_higher': 'incomplete_higher',
+        'secondary': 'secondary',
+        'primary': 'basic',
+        'none': 'none',
+        'unknown': 'unknown'
+      };
+
+      const chinShiftReverseMap = {
+        'right': 'Вправо',
+        'left': 'Влево',
+        'none': ''
+      };
+
+      const lipPositionReverseMap = {
+        'protrudes': 'protruding',
+        'recedes': 'retracted',
+        'correct': 'normal'
+      };
+
       setMedicalCardForm(prev => ({
         ...prev,
         fullName: patient?.full_name || patient?.fullName || '',
@@ -182,24 +305,37 @@ const PatientCardRefactored = ({ patient: patientProp, onBack }) => {
         birthMonth,
         birthYear,
         registration: {
-          ...prev.registration,
-          phone: patient?.contact_info || patient?.contactInfo || ''
+          republic: patient?.registration_republic || '',
+          region: patient?.registration_district || '',
+          city: patient?.registration_city || '',
+          settlement: patient?.registration_settlement || '',
+          street: patient?.registration_street || '',
+          house: patient?.registration_house || '',
+          apartment: patient?.registration_apartment || '',
+          phone: patient?.registration_phone || patient?.contact_info || patient?.contactInfo || ''
+        },
+        locality: patient?.locality_type || 'urban',
+        maritalStatus: patient?.marital_status ? maritalStatusReverseMap[patient.marital_status] || '' : '',
+        education: patient?.education_level ? educationReverseMap[patient.education_level] || '' : '',
+        faceFront: {
+          width: patient?.cephalometry_zy_zy ? patient.cephalometry_zy_zy.toString() : '',
+          heightNasal: patient?.cephalometry_n_me ? patient.cephalometry_n_me.toString() : '',
+          heightSubnasal: patient?.cephalometry_n_sn ? patient.cephalometry_n_sn.toString() : '',
+          symmetry: patient?.face_symmetric ? 'Да' : 'Нет',
+          chinPosition: patient?.chin_shift ? chinShiftReverseMap[patient.chin_shift] || '' : '',
+          nasolabialFold: patient?.mental_fold_pronounced ? 'Да' : 'Нет',
+          lipClosure: patient?.lips_closed ? 'Да' : 'Нет',
+          gumSmile: patient?.gummy_smile ? 'Да' : 'Нет'
         },
         faceProfile: {
-          upperLip: orthodonticData?.photoAnalysis?.profile?.upperLipPosition === 'правильное' ? 'normal' : 
-                    orthodonticData?.photoAnalysis?.profile?.upperLipPosition === 'выступает' ? 'protruding' : 
-                    orthodonticData?.photoAnalysis?.profile?.upperLipPosition === 'западает' ? 'retracted' : 'normal',
-          lowerLip: orthodonticData?.photoAnalysis?.profile?.lowerLipPosition === 'правильное' ? 'normal' :
-                    orthodonticData?.photoAnalysis?.profile?.lowerLipPosition === 'выступает' ? 'protruding' : 
-                    orthodonticData?.photoAnalysis?.profile?.lowerLipPosition === 'западает' ? 'retracted' : 'normal',
-          chin: orthodonticData?.photoAnalysis?.profile?.chinPosition === 'правильное' ? 'normal' :
-                orthodonticData?.photoAnalysis?.profile?.chinPosition === 'выступает' ? 'protruding' : 
-                orthodonticData?.photoAnalysis?.profile?.chinPosition === 'западает' ? 'retracted' : 'normal',
-          type: prev.faceProfile.type
+          type: patient?.profile_type || 'straight',
+          upperLip: patient?.upper_lip_position ? lipPositionReverseMap[patient.upper_lip_position] || 'normal' : 'normal',
+          lowerLip: 'normal',
+          chin: 'normal'
         }
       }));
     }
-  }, [patient, orthodonticData, isEditingMedicalCard, setMedicalCardForm]);
+  }, [patient, setMedicalCardForm]);
 
   // Загрузка данных пациента
   useEffect(() => {
@@ -760,6 +896,7 @@ const PatientCardRefactored = ({ patient: patientProp, onBack }) => {
                 <PatientMedicalForm
                   formData={medicalCardForm}
                   onChange={handleMedicalCardChange}
+                  onSubmit={handleMedicalCardSubmit}
                 />
               </div>
             )}
