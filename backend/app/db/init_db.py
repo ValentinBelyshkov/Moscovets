@@ -23,7 +23,7 @@ def init_db():
                 username="admin",
                 email="admin@example.com",
                 full_name="Администратор",
-                hashed_password=get_password_hash("admin123"),
+                hashed_password=get_password_hash("admin"),
                 role=UserRole.ADMINISTRATOR,
                 account_status=UserAccountStatus.ACTIVE
             )

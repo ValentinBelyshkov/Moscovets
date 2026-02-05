@@ -18,10 +18,13 @@ app = FastAPI(
 if settings.BACKEND_CORS_ORIGINS:
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=settings.get_cors_origins(),
+        allow_origins=[str(origin) for origin in settings.get_cors_origins()],  # Explicitly convert to string
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
+        # Additional CORS settings for better compatibility
+        allow_origin_regex=None,
+        expose_headers=["Access-Control-Allow-Origin"],
     )
 
 # Добавляем middleware для логирования запросов

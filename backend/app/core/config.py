@@ -13,9 +13,16 @@ class Settings(BaseSettings):
 
     # Database settings
     DATABASE_URL: str = "postgresql://moskovets3d:moskovets3d@localhost:5432/moskovets3d"
+    
+    # Database settings for Docker
+    DB_SERVER: str = "localhost"
+    DB_PORT: str = "5432"
+    DB_USER: str = "moskovets3d"
+    DB_PASSWORD: str = "moskovets3d"
+    DB_NAME: str = "moskovets3d"
 
     # CORS settings
-    BACKEND_CORS_ORIGINS: str = "http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:3630,http://localhost:5173,http://127.0.0.1:3000,http://127.0.0.1:3001,http://127.0.0.1:3002,http://127.0.0.1:3630,http://127.0.0.1:5173"
+    BACKEND_CORS_ORIGINS: str = "http://localhost:3630,http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:5173,http://127.0.0.1:3630,http://127.0.0.1:3000,http://127.0.0.1:3001,http://127.0.0.1:3002,http://127.0.0.1:5173"
 
     # Security settings
     SECRET_KEY: str = "your-secret-key-here"
