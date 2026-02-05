@@ -1,9 +1,9 @@
 import React from 'react';
 
-const PatientMedicalForm = ({ formData, onChange }) => {
+const PatientMedicalForm = ({ formData, onChange, onSubmit }) => {
   const handleChange = (e, fieldPath) => {
     const { name, value, type, checked } = e.target;
-    
+
     if (fieldPath) {
       // Обработка вложенных полей (например, registration.city)
       onChange(e, fieldPath);
@@ -15,12 +15,19 @@ const PatientMedicalForm = ({ formData, onChange }) => {
     }
   };
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (onSubmit) {
+      onSubmit(formData);
+    }
+  };
+
   return (
     <div className="bg-white rounded-2xl shadow-lg overflow-hidden mt-6">
       <div className="p-6 lg:p-8">
         <h2 className="text-2xl font-bold text-gray-900 mb-6">Медицинская карта пациента</h2>
-        
-        <form className="space-y-8">
+
+        <form className="space-y-8" onSubmit={handleSubmit}>
           {/* СТРАНИЦА 1 - Личные данные */}
           <section className="space-y-6">
             <div className="border-b pb-4">
@@ -498,10 +505,6 @@ const PatientMedicalForm = ({ formData, onChange }) => {
             <button
               type="submit"
               className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-medium hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl"
-              onClick={(e) => {
-                e.preventDefault();
-                console.log('Saving medical form:', formData);
-              }}
             >
               Сохранить
             </button>
