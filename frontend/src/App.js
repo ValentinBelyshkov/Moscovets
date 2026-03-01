@@ -113,8 +113,11 @@ function AuthWrapper({ onLogin, onLogout, isLoggedIn, user }) {
           <Route path="/photometry" element={<PhotometryModule />} />
           <Route path="/photometry/:id" element={<PhotometryModule />} />
           <Route path="/ct" element={<CTModule />} />
+          <Route path="/ct/:id" element={<CTModule />} />
           <Route path="/biometry" element={<BiometryModule />} />
+          <Route path="/biometry/:id" element={<BiometryModule />} />
           <Route path="/modeling" element={<ModelingModule />} />
+          <Route path="/modeling/:id" element={<ModelingModule />} />
           <Route path="/file-transfer-demo" element={<FileTransferDemo />} />
         </Routes>
       </main>
@@ -156,7 +159,7 @@ function MedicalCardWithPatient() {
     navigate('/patients');
   };
 
-
+  return <PatientCard patient={selectedPatient} onBack={handleBackToPatientDirectory} />;
 }
 
 function App() {

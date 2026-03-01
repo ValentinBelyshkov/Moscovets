@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { useParams } from 'react-router-dom';
 import { usePatientNavigation } from '../hooks/usePatientNavigation';
 import './ModelingModule.css';
 import ThreeDViewer2 from './ThreeDViewer2';
 
 const ModelingModule = () => {
+  const { id } = useParams();
   // Обрабатываем навигацию с данными пациента
-  usePatientNavigation();
+  usePatientNavigation(id);
   
   const [modelingData, setModelingData] = useState({
     patientName: 'Иванов Иван Иванович',

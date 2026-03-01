@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { useParams } from 'react-router-dom';
 import { usePatientNavigation } from '../hooks/usePatientNavigation';
 // Используем локальный сервис вместо серверного
 import localMedicalRecordService from '../services/localMedicalRecordService';
@@ -6,8 +7,9 @@ import VTKViewer from './VTKViewer';
 import ArchiveUpload from './ArchiveUpload';
 import './ArchiveUpload.css';
 const CTModule = () => {
+  const { id } = useParams();
   // Обрабатываем навигацию с данными пациента
-  usePatientNavigation();
+  usePatientNavigation(id);
   
   // State for CT data and UI controls
   const [ctData, setCtData] = useState({
