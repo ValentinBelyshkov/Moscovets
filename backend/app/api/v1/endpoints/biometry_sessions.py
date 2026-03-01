@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from app import crud, schemas
 from app.api import deps
 from app.models.user import User
-from app.models.biometry import BiometryStatus
+from app.schemas.shared_enums import BiometryStatus
 from app.api.v1.endpoints.model_helpers import validate_model_exists, check_models_same_patient
 
 logger = logging.getLogger(__name__)

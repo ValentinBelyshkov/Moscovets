@@ -13,7 +13,7 @@ from starlette.responses import FileResponse
 from app import crud, schemas
 from app.api import deps
 from app.models.user import User
-from app.models.biometry import ModelType, ModelFormat, BiometryStatus
+from app.schemas.shared_enums import ModelType, ModelFormat, BiometryStatus
 from app.services.assimp_service import assimp_service
 from app.crud.crud_biometry import generate_biometry_file_path, validate_biometry_file
 from app.api.v1.endpoints.model_helpers import (

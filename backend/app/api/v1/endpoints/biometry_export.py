@@ -14,7 +14,7 @@ from starlette.responses import FileResponse
 from app import crud, schemas
 from app.api import deps
 from app.models.user import User
-from app.models.biometry import BiometryStatus
+from app.schemas.shared_enums import BiometryStatus
 from app.services.assimp_service import assimp_service
 from app.crud.crud_biometry import generate_biometry_file_path
 

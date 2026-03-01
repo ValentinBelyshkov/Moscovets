@@ -1,139 +1,98 @@
+"""
+Pydantic schemas for biometry module.
+Uses shared schemas to avoid duplication.
+"""
 from datetime import datetime
 from typing import Optional, List, Dict, Any
-from pydantic import BaseModel, Field
-import logging
 
-from app.models.biometry import ModelType, ModelFormat, BiometryStatus
+from pydantic import BaseModel, ConfigDict
 
-# Настройка логирования для схем биометрии
-logger = logging.getLogger(__name__)
+from app.schemas.shared_enums import ModelType, ModelFormat, BiometryStatus
+from app.schemas.shared_schemas import (
+    ThreeDModelBase,
+    ThreeDModelUpdate,
+    ThreeDModelResponse
+)
 
-# Shared properties for biometry models
-class BiometryModelBase(BaseModel):
-    patient_id: int
-    model_type: ModelType
-    model_format: ModelFormat
-    file_path: str
-    original_filename: str
-    file_size: int
-    scale: float = 1.0
-    position_x: float = 0.0
-    position_y: float = 0.0
-    position_z: float = 0.0
-    rotation_x: float = 0.0
-    rotation_y: float = 0.0
-    rotation_z: float = 0.0
-    vertices_count: Optional[int] = None
-    faces_count: Optional[int] = None
-    bounding_box: Optional[Dict[str, Any]] = None
+# Biometry Model schemas
+
+class BiometryModelBase(ThreeDModelBase):
+    """Base schema for biometry models"""
     status: BiometryStatus = BiometryStatus.UPLOADED
 
-    model_config = {
-        "protected_namespaces": ()
-    }
-    
-    def __str__(self):
-        logger.debug(f"Строковое представление базовой модели: patient_id={self.patient_id}, type={self.model_type}, format={self.model_format}")
-        return f"BiometryModelBase(patient_id={self.patient_id}, type={self.model_type}, format={self.model_format})"
 
-# Properties to receive via API on creation
 class BiometryModelCreate(BiometryModelBase):
-    def __init__(self, **data):
-        logger.debug(f"Создание BiometryModelCreate: {data}")
-        super().__init__(**data)
+    """Schema for creating biometry model"""
+    pass
 
-# Properties to receive via API on update
-class BiometryModelUpdate(BaseModel):
-    scale: Optional[float] = None
-    position_x: Optional[float] = None
-    position_y: Optional[float] = None
-    position_z: Optional[float] = None
-    rotation_x: Optional[float] = None
-    rotation_y: Optional[float] = None
-    rotation_z: Optional[float] = None
-    vertices_count: Optional[int] = None
-    faces_count: Optional[int] = None
-    bounding_box: Optional[Dict[str, Any]] = None
+
+class BiometryModelUpdate(ThreeDModelUpdate):
+    """Schema for updating biometry model"""
     status: Optional[BiometryStatus] = None
+
+
+class BiometryModel(BiometryModelResponse):
+    """Schema for biometry model response"""
+    status: BiometryStatus
     
-    def __init__(self, **data):
-        logger.debug(f"Создание BiometryModelUpdate: {data}")
-        super().__init__(**data)
-
-# Properties to return via API
-class BiometryModel(BiometryModelBase):
-    id: int
-    created_at: datetime
-    updated_at: datetime
-    is_active: bool
-
     class Config:
         from_attributes = True
         protected_namespaces = ()
-    
-    def __str__(self):
-        logger.debug(f"Строковое представление модели: id={self.id}, patient_id={self.patient_id}, type={self.model_type}")
-        return f"BiometryModel(id={self.id}, patient_id={self.patient_id}, type={self.model_type}, filename='{self.original_filename}')"
 
-# Shared properties for biometry sessions
+
+# Biometry Session schemas
+
 class BiometrySessionBase(BaseModel):
+    """Base schema for biometry sessions"""
     patient_id: int
     calibration_points: Optional[Dict[str, Any]] = None
     transformation_matrix: Optional[Dict[str, Any]] = None
     status: BiometryStatus = BiometryStatus.UPLOADED
     
-    def __str__(self):
-        logger.debug(f"Строковое представление базовой сессии: patient_id={self.patient_id}, status={self.status}")
-        return f"BiometrySessionBase(patient_id={self.patient_id}, status={self.status})"
+    model_config = ConfigDict(protected_namespaces=())
 
-# Properties to receive via API on creation
+
 class BiometrySessionCreate(BiometrySessionBase):
+    """Schema for creating biometry session"""
     model_id: Optional[int] = None
-    
-    def __init__(self, **data):
-        logger.debug(f"Создание BiometrySessionCreate: {data}")
-        super().__init__(**data)
 
-# Properties to receive via API on update
+
 class BiometrySessionUpdate(BaseModel):
+    """Schema for updating biometry session"""
     calibration_points: Optional[Dict[str, Any]] = None
     transformation_matrix: Optional[Dict[str, Any]] = None
     status: Optional[BiometryStatus] = None
     model_id: Optional[int] = None
     
-    def __init__(self, **data):
-        logger.debug(f"Создание BiometrySessionUpdate: {data}")
-        super().__init__(**data)
+    model_config = ConfigDict(protected_namespaces=())
 
-# Properties to return via API
+
 class BiometrySession(BiometrySessionBase):
+    """Schema for biometry session response"""
     id: int
     model_id: Optional[int] = None
     created_at: datetime
     updated_at: datetime
     is_active: bool
-
-    class Config:
-        from_attributes = True
     
-    def __str__(self):
-        logger.debug(f"Строковое представление сессии: id={self.id}, patient_id={self.patient_id}, model_id={self.model_id}")
-        return f"BiometrySession(id={self.id}, patient_id={self.patient_id}, model_id={self.model_id})"
-
-# Properties for biometry session with related model
-class BiometrySessionWithModel(BiometrySession):
-    model: Optional[BiometryModel] = None
-
     class Config:
         from_attributes = True
         protected_namespaces = ()
-    
-    def __str__(self):
-        logger.debug(f"Строковое представление сессии с моделью: id={self.id}, model_id={self.model.id if self.model else None}")
-        return f"BiometrySessionWithModel(id={self.id}, model_id={self.model.id if self.model else None})"
 
-# Properties for model upload response
+
+class BiometrySessionWithModel(BiometrySession):
+    """Schema for biometry session with related model"""
+    model: Optional[BiometryModel] = None
+    
+    class Config:
+        from_attributes = True
+        protected_namespaces = ()
+
+
+# Biometry API Request/Response schemas
+
 class BiometryModelUploadResponse(BaseModel):
+    """Response for model upload"""
     id: int
     model_type: ModelType
     model_format: ModelFormat
@@ -143,29 +102,19 @@ class BiometryModelUploadResponse(BaseModel):
     faces_count: Optional[int] = None
     status: BiometryStatus
     message: str
-
-    model_config = {
-        "protected_namespaces": ()
-    }
     
-    def __str__(self):
-        logger.debug(f"Строковое представление ответа на загрузку: id={self.id}, type={self.model_type}, message='{self.message}'")
-        return f"BiometryModelUploadResponse(id={self.id}, type={self.model_type}, message='{self.message}')"
+    model_config = ConfigDict(protected_namespaces=())
 
-# Properties for model analysis request
+
 class BiometryModelAnalysisRequest(BaseModel):
+    """Request for model analysis"""
     model_id: int
     
-    def __init__(self, **data):
-        logger.debug(f"Создание BiometryModelAnalysisRequest: {data}")
-        super().__init__(**data)
-    
-    def __str__(self):
-        logger.debug(f"Строковое представление запроса анализа: model_id={self.model_id}")
-        return f"BiometryModelAnalysisRequest(model_id={self.model_id})"
+    model_config = ConfigDict(protected_namespaces=())
 
-# Properties for model analysis response
+
 class BiometryModelAnalysisResponse(BaseModel):
+    """Response for model analysis"""
     success: bool
     vertices_count: int
     faces_count: int
@@ -174,66 +123,124 @@ class BiometryModelAnalysisResponse(BaseModel):
     surface_area: Optional[float] = None
     is_watertight: Optional[bool] = None
     defects: List[str] = []
-    
-    def __init__(self, **data):
-        logger.debug(f"Создание BiometryModelAnalysisResponse: {data}")
-        super().__init__(**data)
-    
-    def __str__(self):
-        logger.debug(f"Строковое представление ответа анализа: success={self.success}, vertices={self.vertices_count}, faces={self.faces_count}")
-        return f"BiometryModelAnalysisResponse(success={self.success}, vertices={self.vertices_count}, faces={self.faces_count})"
 
-# Properties for biometry calibration request
+
 class BiometryCalibrationRequest(BaseModel):
+    """Request for biometry calibration"""
     session_id: int
     calibration_points: Dict[str, Any]
     
-    def __init__(self, **data):
-        logger.debug(f"Создание BiometryCalibrationRequest: {data}")
-        super().__init__(**data)
-    
-    def __str__(self):
-        logger.debug(f"Строковое представление запроса калибровки: session_id={self.session_id}, points_count={len(self.calibration_points) if self.calibration_points else 0}")
-        return f"BiometryCalibrationRequest(session_id={self.session_id}, points_count={len(self.calibration_points) if self.calibration_points else 0})"
+    model_config = ConfigDict(protected_namespaces=())
 
-# Properties for biometry calibration response
+
 class BiometryCalibrationResponse(BaseModel):
+    """Response for biometry calibration"""
     success: bool
     message: str
     transformation_matrix: Optional[Dict[str, Any]] = None
     
-    def __init__(self, **data):
-        logger.debug(f"Создание BiometryCalibrationResponse: {data}")
-        super().__init__(**data)
-    
-    def __str__(self):
-        logger.debug(f"Строковое представление ответа калибровки: success={self.success}, message='{self.message}'")
-        return f"BiometryCalibrationResponse(success={self.success}, message='{self.message}')"
+    model_config = ConfigDict(protected_namespaces=())
 
-# Properties for biometry export request
+
 class BiometryExportRequest(BaseModel):
+    """Request for biometry export"""
     session_id: int
     export_format: ModelFormat
     
-    def __init__(self, **data):
-        logger.debug(f"Создание BiometryExportRequest: {data}")
-        super().__init__(**data)
-    
-    def __str__(self):
-        logger.debug(f"Строковое представление запроса экспорта: session_id={self.session_id}, format={self.export_format}")
-        return f"BiometryExportRequest(session_id={self.session_id}, format={self.export_format})"
+    model_config = ConfigDict(protected_namespaces=())
 
-# Properties for biometry export response
+
 class BiometryExportResponse(BaseModel):
+    """Response for biometry export"""
     success: bool
     message: str
     download_url: Optional[str] = None
     file_size: Optional[int] = None
     
-    def __init__(self, **data):
-        logger.debug(f"Создание BiometryExportResponse: {data}")
-        super().__init__(**data)
+    model_config = ConfigDict(protected_namespaces=())
+
+
+# Biometry Point schemas (for API)
+
+class ModelPoint(BaseModel):
+    """Point on 3D model"""
+    id: int
+    x: float
+    y: float
+    z: float
+    label: Optional[str] = None
     
-    def __str__(self):
-        logger.debug(f"Строковое представление ответа экспорта: success={self.success}, message='{self.message}'")
-        return f"BiometryExportResponse(success={self.success}, message='{self.message}')"
+    model_config = ConfigDict(protected_namespaces=())
+
+
+class MapPoint(BaseModel):
+    """Point on map"""
+    id: int
+    lat: float
+    lng: float
+    label: Optional[str] = None
+    
+    model_config = ConfigDict(protected_namespaces=())
+
+
+class Pair(BaseModel):
+    """Pair of model and map points"""
+    id: int
+    model_id: int
+    map_id: int
+    
+    model_config = ConfigDict(protected_namespaces=())
+
+
+class CreateModelPoint(BaseModel):
+    """Request to create model point"""
+    x: float
+    y: float
+    z: float
+    label: Optional[str] = None
+    
+    model_config = ConfigDict(protected_namespaces=())
+
+
+class CreateMapPoint(BaseModel):
+    """Request to create map point"""
+    lat: float
+    lng: float
+    label: Optional[str] = None
+    
+    model_config = ConfigDict(protected_namespaces=())
+
+
+class CreatePair(BaseModel):
+    """Request to create pair"""
+    model_id: int
+    map_id: int
+    
+    model_config = ConfigDict(protected_namespaces=())
+
+
+class CalibrationPoint(BaseModel):
+    """Calibration point pair"""
+    model_point: ModelPoint
+    geo_point: MapPoint
+    
+    model_config = ConfigDict(protected_namespaces=())
+
+
+class CalibrationExport(BaseModel):
+    """Calibration export data"""
+    model_path: str
+    pairs: List[CalibrationPoint]
+    
+    model_config = ConfigDict(protected_namespaces=())
+
+
+class ObjUploadResponse(BaseModel):
+    """Response for OBJ upload"""
+    filename: str
+    content_type: str
+    size_bytes: int
+    stored_path: str
+    uploaded_at: datetime
+    
+    model_config = ConfigDict(protected_namespaces=())
