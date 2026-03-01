@@ -3,6 +3,7 @@ Patient model.
 Uses shared enums to avoid duplication.
 """
 from sqlalchemy import Column, Integer, String, Date, DateTime, Enum, Text, Float, Boolean
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
 from app.db.base import Base
@@ -65,6 +66,9 @@ class Patient(Base):
     # Временные метки
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now(), nullable=False)
+    
+    # Relationships
+    files = relationship("File", back_populates="patient", cascade="all, delete-orphan")
     
     def __init__(self, full_name: str, birth_date: Date, gender: Gender, contact_info: str = "", complaints: str = None, 
                  medical_card_number: str = None, address: str = None, emergency_contact: str = None, 

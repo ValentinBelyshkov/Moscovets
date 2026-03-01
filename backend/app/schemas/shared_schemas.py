@@ -84,6 +84,7 @@ class SessionResponse(SessionBase):
     
     class Config:
         from_attributes = True
+        protected_namespaces = ()
 
 
 # === Shared modeling schemas ===
@@ -158,6 +159,9 @@ class ModelAnalysisResponse(BaseModel):
     surface_area: Optional[float] = None
     is_watertight: Optional[bool] = None
     defects: List[str] = []
+    
+    class Config:
+        protected_namespaces = ()
 
 
 # === Shared status response ===
