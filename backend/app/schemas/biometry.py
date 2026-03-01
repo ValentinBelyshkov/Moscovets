@@ -11,7 +11,8 @@ from app.schemas.shared_enums import ModelType, ModelFormat, BiometryStatus
 from app.schemas.shared_schemas import (
     ThreeDModelBase,
     ThreeDModelUpdate,
-    ThreeDModelResponse
+    ThreeDModelResponse,
+    StatusResponse
 )
 
 # Biometry Model schemas
@@ -35,9 +36,7 @@ class BiometryModel(ThreeDModelResponse):
     """Schema for biometry model response"""
     status: BiometryStatus
     
-    class Config:
-        from_attributes = True
-        protected_namespaces = ()
+    model_config = ConfigDict(from_attributes=True, protected_namespaces=())
 
 
 # Biometry Session schemas
@@ -75,18 +74,14 @@ class BiometrySession(BiometrySessionBase):
     updated_at: datetime
     is_active: bool
     
-    class Config:
-        from_attributes = True
-        protected_namespaces = ()
+    model_config = ConfigDict(from_attributes=True, protected_namespaces=())
 
 
 class BiometrySessionWithModel(BiometrySession):
     """Schema for biometry session with related model"""
     model: Optional[BiometryModel] = None
     
-    class Config:
-        from_attributes = True
-        protected_namespaces = ()
+    model_config = ConfigDict(from_attributes=True, protected_namespaces=())
 
 
 # Biometry API Request/Response schemas
