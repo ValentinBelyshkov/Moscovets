@@ -1,9 +1,10 @@
 // Runtime environment configuration
 window._env_ = window._env_ || {};
 
-// Default values - use relative path for development and Docker deployment
-// The React dev server proxy will handle API requests
-window._env_.REACT_APP_URL_API = window._env_.REACT_APP_URL_API || '/api';
+// Default fallback if no environment variable is set
+if (!window._env_.REACT_APP_URL_API) {
+  window._env_.REACT_APP_URL_API = 'http://localhost:5001';
+}
 
 // Allow overriding from query parameters for testing
 const urlParams = new URLSearchParams(window.location.search);
@@ -15,3 +16,6 @@ if (urlParams.get('api_url')) {
 if (window._env_.REACT_APP_API_URL && !window._env_.REACT_APP_URL_API) {
   window._env_.REACT_APP_URL_API = window._env_.REACT_APP_API_URL;
 }
+
+// Note: REACT_APP_URL_API must be set via build-time environment variables
+// or injected by the deployment environment (e.g., via entrypoint script in Docker)
