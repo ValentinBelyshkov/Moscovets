@@ -31,7 +31,7 @@ class BiometryModelUpdate(ThreeDModelUpdate):
     status: Optional[BiometryStatus] = None
 
 
-class BiometryModel(BiometryModelResponse):
+class BiometryModel(ThreeDModelResponse):
     """Schema for biometry model response"""
     status: BiometryStatus
     
