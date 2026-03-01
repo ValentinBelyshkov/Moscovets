@@ -1,863 +1,624 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { usePatientNavigation } from '../hooks/usePatientNavigation';
-// Используем локальный сервис вместо серверного
-import localMedicalRecordService from '../services/localMedicalRecordService';
-import VTKViewer from './VTKViewer';
 import ArchiveUpload from './ArchiveUpload';
-import './ArchiveUpload.css';
+import './CTModule.css';
+import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+
 const CTModule = () => {
   const { id } = useParams();
-  // Обрабатываем навигацию с данными пациента
-  usePatientNavigation(id);
+  const patientId = id ? parseInt(id) : 1;
   
-  // State for CT data and UI controls
+  usePatientNavigation(patientId);
+
   const [ctData, setCtData] = useState({
-    patientName: 'Иванов Иван Иванович',
-    analysisDate: new Date().toISOString().split('T')[0],
-    ctScan: null,
-    selectedFile: null,
-    uploadedFiles: [], // Store all uploaded files
-    availablePlanes: {}, // Store available planes from uploaded files
-    selectedPlane: null, // Track which plane is currently selected for viewing
-    filePlaneAssignments: {}, // Store user-defined plane assignments for each file
-    showPlaneAssignment: false, // Show plane assignment interface
-    measurements: {
-      // TMJ measurements (ВНЧС)
-      rightClosedPositionX: 0,
-      rightClosedPositionY: 0,
-      rightOpenPositionX: 0,
-      rightOpenPositionY: 0,
-      leftClosedPositionX: 0,
-      leftClosedPositionY: 0,
-      leftOpenPositionX: 0,
-      leftOpenPositionY: 0,
-      
-      // Tooth measurements (Срезы зубов)
-      toothWidthUpper: 0,
-      toothWidthLower: 0,
-      boneThicknessUpper: 0,
-      boneThicknessLower: 0,
-      
-      // Pen analysis (Pen-анализ)
-      molarInclinationUpper: 0,
-      molarInclinationLower: 0,
-      
-      // Basal width measurements (Ширина апикального базиса)
-      basalWidthUpper: 0,
-      basalWidthLower: 0,
-      basalWidthDeficit: 0,
-      
-      // Airway measurements (Воздухоносные пути)
-      tonguePosition: 0,
-      airwayVolume: 0,
-      
-      // Additional measurements
-      maxillaryWidth: 45.0,
-      mandibularWidth: 42.0,
-      anteriorMaxillaryHeight: 25.0,
-      posteriorMaxillaryHeight: 30.0,
-      anteriorMandibularHeight: 22.0,
-      posteriorMandibularHeight: 28.0,
-      maxillarySinusVolume: 15.0,
-      nasalCavityVolume: 20.0,
-      airwayVolumeTotal: 25.0,
-      condyleHeight: 18.0,
-      condyleWidth: 15.0,
-      ramusWidth: 22.0,
-      coronoidHeight: 35.0,
-      gonialAngle: 125.0,
-      mandibularLength: 100.0,
-      bigonialWidth: 95.0,
-      bicondylarWidth: 110.0,
-      upperFacialHeight: 70.0,
-      middleFacialHeight: 60.0,
-      lowerFacialHeight: 50.0,
-      facialIndex: 150.0,
-      mandibularPlaneAngle: 32.0,
-      yaxis: 60.0,
-      sellaNasion: 88.0,
-      nasionA: 85.0,
-      nasionB: 78.5,
-      aPointBPoint: 88.0,
-    }
+    scanDate: null,
+    archiveName: null,
+    dicomFiles: [],
+    loaded: false,
+    error: null
   });
-  // Viewer states
-  const [windowLevel, setWindowLevel] = useState({ window: 400, level: 40 });
-  const [zoomLevel, setZoomLevel] = useState(1);
-  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
-  const [activeTool, setActiveTool] = useState('ruler'); // ruler, protractor, annotate
-  
-  // Analysis tools state
-  const [measurements, setMeasurements] = useState([]); // eslint-disable-line no-unused-vars
-  const [annotations, setAnnotations] = useState({
-    sagittal: [],
-    coronal: [],
-    axial: []
-  }); // Store annotations per plane
-  
-  // Loading states
-  const [error, setError] = useState(null);
-  
-  // Refs for image manipulation
-  const containerRef = useRef(null);
-  // Handle archive upload success
-  const handleArchiveUploadSuccess = (result) => {
-    console.log('Archive upload successful:', result);
-    
-    // Process uploaded files from archive
-    const uploadedFiles = result.uploadedFiles;
-    
-    if (uploadedFiles.length === 0) {
-      setError('Из архива не было загружено ни одного файла');
-      return;
-    }
-    
-    // Initialize empty plane assignments - user will assign planes manually
-    const filePlaneAssignments = {};
-    uploadedFiles.forEach(file => {
-      filePlaneAssignments[file.id] = null; // No plane assigned initially
-    });
-    
-    setCtData(prev => ({
-      ...prev,
-      ctScan: `${result.totalExtracted} DICOM файлов извлечено из архива "${result.archiveName}"`,
-      selectedFile: uploadedFiles[0], // Select first file by default
-      uploadedFiles: uploadedFiles,
-      availablePlanes: {}, // Start with empty available planes
-      selectedPlane: null,
-      filePlaneAssignments: filePlaneAssignments,
-      showPlaneAssignment: true // Show plane assignment interface
-    }));
-    
-    alert(`Успешно загружено ${result.totalExtracted} DICOM файлов из архива! Теперь вы можете назначить плоскости для каждого файла.`);
-  };
-  // Handle archive upload error
-  const handleArchiveUploadError = (errorMessage) => {
-    setError(errorMessage);
-    console.error('Archive upload error:', errorMessage);
-  };
-  // Handle measurement change
-  const handleMeasurementChange = (measurement, value) => {
-    setCtData(prev => ({
-      ...prev,
-      measurements: {
-        ...prev.measurements,
-        [measurement]: parseFloat(value) || 0
-      }
-    }));
-  };
-  // Handle plane assignment for a file
-  const handlePlaneAssignment = (fileId, plane) => {
-    setCtData(prev => {
-      const newFilePlaneAssignments = { ...prev.filePlaneAssignments };
-      const newAvailablePlanes = { ...prev.availablePlanes };
-      
-      // Remove file from previous plane assignment if exists
-      const previousPlane = newFilePlaneAssignments[fileId];
-      if (previousPlane && newAvailablePlanes[previousPlane]) {
-        delete newAvailablePlanes[previousPlane];
-      }
-      
-      // Assign file to new plane
-      if (plane) {
-        newFilePlaneAssignments[fileId] = plane;
-        const file = prev.uploadedFiles.find(f => f.id === fileId);
-        if (file) {
-          newAvailablePlanes[plane] = file;
-        }
-      } else {
-        newFilePlaneAssignments[fileId] = null;
-      }
-      
-      return {
-        ...prev,
-        filePlaneAssignments: newFilePlaneAssignments,
-        availablePlanes: newAvailablePlanes
-      };
-    });
-  };
-  // Toggle plane assignment interface
-  const togglePlaneAssignment = () => {
-    setCtData(prev => ({
-      ...prev,
-      showPlaneAssignment: !prev.showPlaneAssignment
-    }));
-  };
-  // Get file preview URL
-  const getFilePreviewUrl = (file) => {
-    return file.data_url || '';
-  };
-  // Handle save
-  const handleSave = async () => {
+
+  const [viewerMode, setViewerMode] = useState('3d'); // '3d' или 'slices'
+  const [currentSlice, setCurrentSlice] = useState(0);
+  const [volumeData, setVolumeData] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  // Three.js refs
+  const mountRef = useRef(null);
+  const rendererRef = useRef(null);
+  const sceneRef = useRef(null);
+  const cameraRef = useRef(null);
+  const controlsRef = useRef(null);
+  const volumeMeshRef = useRef(null);
+  const frameRef = useRef(null);
+
+  // Canvas refs для срезов
+  const canvasRef = useRef(null);
+
+  // Проверка загруженных КТ при монтировании
+  useEffect(() => {
+    loadExistingCT();
+  }, [patientId]);
+
+  // Загрузка существующих КТ данных
+  const loadExistingCT = async () => {
     try {
-      // Prepare data for saving to medical record
-      const ctDataToSave = {
-        patient_id: 1, // This would come from the current patient context in a real app
-        record_type: 'ct',
-        data: JSON.stringify({
-          patientName: ctData.patientName,
-          analysisDate: ctData.analysisDate,
-          measurements: ctData.measurements,
-          fileCount: ctData.uploadedFiles.length
-        }),
-        notes: `CT analysis with ${ctData.uploadedFiles.length} files`
-      };
+      setLoading(true);
       
-      // Save to medical records database using local service
-      const savedRecord = await localMedicalRecordService.createMedicalRecord(ctDataToSave); // eslint-disable-line no-unused-vars
+      // Пробуем загрузить из localStorage
+      const savedCT = localStorage.getItem(`ct_data_${patientId}`);
+      if (savedCT) {
+        const ct = JSON.parse(savedCT);
+        if (ct.dicomFiles && ct.dicomFiles.length > 0) {
+          // Загружаем данные срезов
+          const slices = await loadSlicesFromFiles(ct.dicomFiles);
+          if (slices.length > 0) {
+            setCtData({
+              ...ct,
+              dicomFiles: slices,
+              loaded: true
+            });
+            setCurrentSlice(Math.floor(slices.length / 2));
+            return;
+          }
+        }
+      }
       
-      alert('Данные КТ успешно сохранены!');
+      setCtData(prev => ({ ...prev, loaded: false }));
     } catch (error) {
-      console.error('Error saving CT data:', error);
-      alert('Ошибка при сохранении данных КТ: ' + error.message);
+      console.error('Error loading existing CT:', error);
+      setCtData(prev => ({ ...prev, error: error.message }));
+    } finally {
+      setLoading(false);
     }
   };
-  // Handle tool selection
-  const handleToolSelect = (tool) => {
-    setActiveTool(tool);
-  };
-  
-  // Handle plane selection
-  const handlePlaneSelect = (plane) => {
-    console.log('Switching to plane:', plane);
-    console.log('Available planes:', ctData.availablePlanes);
-    if (ctData.availablePlanes && ctData.availablePlanes[plane]) {
-      const selectedFile = ctData.availablePlanes[plane];
-      console.log('Selected file for plane:', plane, selectedFile);
-      console.log('Selected file data_url:', selectedFile?.data_url);
-      console.log('Is selected file data_url valid?', !!selectedFile?.data_url);
-      
-      // Validate that the selected file has a valid data_url
-      if (!selectedFile?.data_url) {
-        setError(`Не удалось загрузить данные для плоскости ${plane}: отсутствует URL файла`);
-        return;
-      }
-      
-      setCtData(prev => ({
-        ...prev,
-        selectedFile: selectedFile,
-        selectedPlane: plane
-      }));
-    } else {
-      console.log('Plane not available:', plane);
-      console.log('Available planes:', ctData.availablePlanes);
-      setError(`Плоскость ${plane} недоступна`);
-    }
-  };
-  // Handle measurement completion from VTKViewer
-  const handleMeasurementComplete = (measurement) => {
-    setMeasurements(prev => [...prev, measurement]);
+
+  // Загрузка срезов из файлов
+  const loadSlicesFromFiles = async (files) => {
+    const slices = [];
     
-    // Convert pixel distance to centimeters if pixel spacing is available
-    if (measurement.tool === 'ruler') {
-      if (measurement.pixelSpacing && measurement.pixelSpacing.row && measurement.pixelSpacing.column) {
-        // Use average of row and column spacing for isotropic approximation
-        const avgPixelSpacing = (measurement.pixelSpacing.row + measurement.pixelSpacing.column) / 2;
-        const distanceInMm = measurement.distance * avgPixelSpacing;
-        const distanceInCm = distanceInMm / 10;
+    for (const file of files) {
+      try {
+        if (file.data_url) {
+          const response = await fetch(file.data_url);
+          const buffer = await response.arrayBuffer();
+          const slice = await parseDicomSlice(buffer);
+          if (slice) {
+            slices.push({
+              ...slice,
+              name: file.name,
+              data_url: file.data_url
+            });
+          }
+        }
+      } catch (error) {
+        console.warn('Error loading slice:', file.name, error);
+      }
+    }
+    
+    // Сортируем по номеру среза
+    slices.sort((a, b) => (a.sliceNumber || 0) - (b.sliceNumber || 0));
+    
+    return slices;
+  };
+
+  // Простой парсер DICOM (упрощенный)
+  const parseDicomSlice = async (arrayBuffer) => {
+    try {
+      // Пробуем использовать dicomParser если доступен
+      let pixelData = null;
+      let rows = 256;
+      let columns = 256;
+      let sliceNumber = 0;
+      
+      // Пробуем как base64 изображение
+      try {
+        const byteArray = new Uint8Array(arrayBuffer);
+        // Проверяем, является ли это DICOM по сигнатуре
+        if (byteArray[0] === 0x44 && byteArray[1] === 0x49 && byteArray[2] === 0x43 && byteArray[3] === 0x4D) {
+          // Это DICOM - используем упрощенный парсинг
+          // Для простоты, попробуем найти pixel данные
+          // Или просто покажем как есть
+        }
         
-        alert(`Расстояние: ${distanceInCm.toFixed(2)} см`);
-      } else {
-        alert(`Расстояние: ${measurement.distance.toFixed(2)} пикселей`);
-      }
-    } else if (measurement.tool === 'protractor') {
-      // For protractor, show angle
-      alert(`Угол: ${measurement.angle.toFixed(2)} градусов`);
-    }
-  };
-  // Handle annotation addition from VTKViewer
-  const handleAnnotationAdd = (annotation) => {
-    setAnnotations(prev => ({
-      ...prev,
-      [ctData.selectedPlane]: [...prev[ctData.selectedPlane], annotation]
-    }));
-    alert(`Добавлена аннотация в точке (${annotation.x.toFixed(2)}, ${annotation.y.toFixed(2)}) на плоскости ${ctData.selectedPlane}`);
-  };
-  // Handle window/level adjustment
-  const handleWindowLevelChange = (type, value) => {
-    setWindowLevel(prev => ({
-      ...prev,
-      [type]: parseInt(value)
-    }));
-  };
-  // Handle zoom
-  const handleZoom = (direction) => {
-    if (direction === 'in') {
-      setZoomLevel(prev => Math.min(prev * 1.2, 5));
-    } else {
-      setZoomLevel(prev => Math.max(prev / 1.2, 0.2));
-    }
-  };
-  // Handle pan
-  const handlePan = (direction) => {
-    const step = 10;
-    switch (direction) {
-      case 'up':
-        setPanOffset(prev => ({ ...prev, y: prev.y - step }));
-        break;
-      case 'down':
-        setPanOffset(prev => ({ ...prev, y: prev.y + step }));
-        break;
-      case 'left':
-        setPanOffset(prev => ({ ...prev, x: prev.x - step }));
-        break;
-      case 'right':
-        setPanOffset(prev => ({ ...prev, x: prev.x + step }));
-        break;
-      default:
-        break;
-    }
-  };
-  // Reset view
-  const resetView = () => {
-    setZoomLevel(1);
-    setPanOffset({ x: 0, y: 0 });
-  };
-  // Render viewer with image display
-  const renderViewer = () => {
-    // Use the data_url property from the file object
-    const imageUrl = ctData.selectedFile && ctData.selectedFile.data_url ? ctData.selectedFile.data_url : null;
-    console.log('Rendering viewer with imageUrl:', imageUrl);
-    console.log('Selected file:', ctData.selectedFile);
-    console.log('Selected plane:', ctData.selectedPlane);
-    console.log('Is imageUrl valid?', !!imageUrl);
-    if (ctData.selectedFile) {
-      console.log('Selected file data_url:', ctData.selectedFile.data_url);
-      console.log('Selected file data_url type:', typeof ctData.selectedFile.data_url);
-      console.log('Selected file data_url length:', ctData.selectedFile.data_url ? ctData.selectedFile.data_url.length : 'N/A');
-    }
-    
-    // If we have an error, show it instead of the viewer
-    if (error) {
-      return (
-        <div className="ct-viewer-container">
-          <div className="viewer-controls">
-            {/* Controls remain the same */}
-            <div className="tool-selector">
-              <h4>Инструменты анализа</h4>
-              <button
-                className={activeTool === 'ruler' ? 'active' : ''}
-                onClick={() => handleToolSelect('ruler')}
-              >
-                Линейка (измерение расстояний)
-              </button>
-              <button
-                className={activeTool === 'protractor' ? 'active' : ''}
-                onClick={() => handleToolSelect('protractor')}
-              >
-                Транспортир (измерение углов)
-              </button>
-              <button
-                className={activeTool === 'annotate' ? 'active' : ''}
-                onClick={() => handleToolSelect('annotate')}
-              >
-                Аннотации (визуальные метки)
-              </button>
-            </div>
+        // Пробуем загрузить как обычное изображение
+        const blob = new Blob([byteArray]);
+        const url = URL.createObjectURL(blob);
+        
+        return new Promise((resolve) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            const imageData = ctx.getImageData(0, 0, img.width, img.height);
             
-            {/* Plane selection */}
-            {ctData.availablePlanes && Object.keys(ctData.availablePlanes).length > 0 && (
-              <div className="plane-selector">
-                <h4>Выбор плоскости</h4>
-                <div className="plane-buttons">
-                  {ctData.availablePlanes.sagittal && (
-                    <button
-                      className={ctData.selectedPlane === 'sagittal' ? 'active' : ''}
-                      onClick={() => handlePlaneSelect('sagittal')}
-                    >
-                      Сагиттальная
-                    </button>
-                  )}
-                  {ctData.availablePlanes.coronal && (
-                    <button
-                      className={ctData.selectedPlane === 'coronal' ? 'active' : ''}
-                      onClick={() => handlePlaneSelect('coronal')}
-                    >
-                      Корональная
-                    </button>
-                  )}
-                  {ctData.availablePlanes.axial && (
-                    <button
-                      className={ctData.selectedPlane === 'axial' ? 'active' : ''}
-                      onClick={() => handlePlaneSelect('axial')}
-                    >
-                      Аксиальная
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-          
-          <div className="viewer-display">
-            <div className="error-message" style={{ margin: '20px', padding: '15px' }}>
-              Ошибка: {error}
-              <button
-                onClick={() => setError(null)}
-                style={{ marginLeft: '10px', padding: '5px 10px' }}
-              >
-                Закрыть
-              </button>
-            </div>
-          </div>
-        </div>
-      );
-    }
-    
-    return (
-      <div className="ct-viewer-container">
-        <div className="viewer-controls">
-          <div className="tool-selector">
-            <h4>Инструменты анализа</h4>
-            <button
-              className={activeTool === 'ruler' ? 'active' : ''}
-              onClick={() => handleToolSelect('ruler')}
-            >
-              Линейка (измерение расстояний)
-            </button>
-            <button
-              className={activeTool === 'protractor' ? 'active' : ''}
-              onClick={() => handleToolSelect('protractor')}
-            >
-              Транспортир (измерение углов)
-            </button>
-            <button
-              className={activeTool === 'annotate' ? 'active' : ''}
-              onClick={() => handleToolSelect('annotate')}
-            >
-              Аннотации (визуальные метки)
-            </button>
-          </div>
-          
-          {/* Plane selection */}
-          {ctData.availablePlanes && Object.keys(ctData.availablePlanes).length > 0 && (
-            <div className="plane-selector">
-              <h4>Выбор плоскости</h4>
-              <div className="plane-buttons">
-                {ctData.availablePlanes.sagittal && (
-                  <button
-                    className={ctData.selectedPlane === 'sagittal' ? 'active' : ''}
-                    onClick={() => handlePlaneSelect('sagittal')}
-                  >
-                    Сагиттальная
-                  </button>
-                )}
-                {ctData.availablePlanes.coronal && (
-                  <button
-                    className={ctData.selectedPlane === 'coronal' ? 'active' : ''}
-                    onClick={() => handlePlaneSelect('coronal')}
-                  >
-                    Корональная
-                  </button>
-                )}
-                {ctData.availablePlanes.axial && (
-                  <button
-                    className={ctData.selectedPlane === 'axial' ? 'active' : ''}
-                    onClick={() => handlePlaneSelect('axial')}
-                  >
-                    Аксиальная
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
-          
-          
-          <div className="window-level-controls">
-            <h4>Настройки окна/уровня (Window/Level)</h4>
-            <div>
-              <label>Окно (ширина): {windowLevel.window}</label>
-              <input
-                type="range"
-                min="1"
-                max="2000"
-                value={windowLevel.window}
-                onChange={(e) => handleWindowLevelChange('window', e.target.value)}
-              />
-            </div>
-            <div>
-              <label>Уровень (центр): {windowLevel.level}</label>
-              <input
-                type="range"
-                min="-1000"
-                max="1000"
-                value={windowLevel.level}
-                onChange={(e) => handleWindowLevelChange('level', e.target.value)}
-              />
-            </div>
-          </div>
-          
-          <div className="zoom-controls">
-            <h4>Масштаб</h4>
-            <button onClick={() => handleZoom('in')}>+</button>
-            <span>{Math.round(zoomLevel * 100)}%</span>
-            <button onClick={() => handleZoom('out')}>-</button>
-            <button onClick={resetView}>Сброс</button>
-          </div>
-          
-          <div className="pan-controls">
-            <h4>Перемещение</h4>
-            <button onClick={() => handlePan('up')}>↑</button>
-            <div>
-              <button onClick={() => handlePan('left')}>←</button>
-              <button onClick={() => handlePan('right')}>→</button>
-            </div>
-            <button onClick={() => handlePan('down')}>↓</button>
-          </div>
-        </div>
-        
-        <div className="viewer-display">
-          {ctData.ctScan ? (
-            <VTKViewer
-              key={ctData.selectedPlane || 'default'}
-              dataUrl={imageUrl}
-              viewerMode={ctData.selectedPlane || 'axial'}
-              activeTool={activeTool}
-              windowLevel={windowLevel}
-              zoomLevel={zoomLevel}
-              panOffset={panOffset}
-              onMeasurementComplete={handleMeasurementComplete}
-              onAnnotationAdd={handleAnnotationAdd}
-              annotations={annotations[ctData.selectedPlane] || []}
-            />
-          ) : (
-            <div
-              className="viewer-canvas"
-              ref={containerRef}
-              style={{
-                transform: `scale(${zoomLevel}) translate(${panOffset.x}px, ${panOffset.y}px)`,
-                cursor: activeTool === 'ruler' ? 'crosshair' :
-                        activeTool === 'protractor' ? 'crosshair' :
-                        activeTool === 'annotate' ? 'pointer' : 'default',
-                width: '100%',
-                height: '500px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: '#000'
-              }}
-            >
-              {/* Placeholder for CT image */}
-              <div className="image-placeholder">
-                <div style={{
-                  color: 'white',
-                  textAlign: 'center',
-                  width: '100%'
-                }}>
-                  <p>Выберите папку с DICOM-файлами для просмотра компьютерной томограммы</p>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  };
-  // Render plane assignment interface
-  const renderPlaneAssignment = () => {
-    if (!ctData.showPlaneAssignment || ctData.uploadedFiles.length === 0) {
+            resolve({
+              rows: img.height,
+              columns: img.width,
+              pixelData: imageData.data,
+              sliceNumber: sliceNumber
+            });
+            URL.revokeObjectURL(url);
+          };
+          img.onerror = () => {
+            resolve(null);
+            URL.revokeObjectURL(url);
+          };
+          img.src = url;
+        });
+      } catch (e) {
+        console.warn('Error parsing DICOM:', e);
+        return null;
+      }
+    } catch (error) {
+      console.warn('Error parsing DICOM slice:', error);
       return null;
     }
-    const planes = [
-      { value: 'sagittal', label: 'Сагиттальная' },
-      { value: 'coronal', label: 'Корональная' },
-      { value: 'axial', label: 'Аксиальная' }
-    ];
-    return (
-      <div className="plane-assignment-container" style={{
-        border: '2px solid #007bff',
-        borderRadius: '8px',
-        padding: '20px',
-        margin: '20px 0',
-        backgroundColor: '#f8f9fa'
-      }}>
-        <h3>Назначение плоскостей для файлов</h3>
-        <p>Пожалуйста, назначьте соответствующую плоскость для каждого загруженного файла:</p>
-        
-        <div className="files-assignment-grid" style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-          gap: '15px',
-          margin: '20px 0'
-        }}>
-          {ctData.uploadedFiles.map(file => (
-            <div key={file.id} className="file-assignment-item" style={{
-              border: '1px solid #ddd',
-              borderRadius: '6px',
-              padding: '15px',
-              backgroundColor: 'white'
-            }}>
-              <div className="file-info" style={{ marginBottom: '10px' }}>
-                <h4 style={{ margin: '0 0 5px 0', fontSize: '14px' }}>{file.name}</h4>
-                <p style={{ margin: '0', fontSize: '12px', color: '#666' }}>
-                  Размер: {(file.size / 1024 / 1024).toFixed(2)} MB
-                </p>
-              </div>
-              
-              <div className="plane-selector" style={{ marginBottom: '10px' }}>
-                <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px', fontWeight: 'bold' }}>
-                  Плоскость:
-                </label>
-                <select
-                  value={ctData.filePlaneAssignments[file.id] || ''}
-                  onChange={(e) => handlePlaneAssignment(file.id, e.target.value || null)}
-                  style={{
-                    width: '100%',
-                    padding: '5px',
-                    border: '1px solid #ccc',
-                    borderRadius: '4px',
-                    fontSize: '12px'
-                  }}
-                >
-                  <option value="">Не назначена</option>
-                  {planes.map(plane => (
-                    <option key={plane.value} value={plane.value}>
-                      {plane.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              
-              {file.data_url && (
-                <div className="file-preview" style={{ marginTop: '10px' }}>
-                  <img
-                    src={getFilePreviewUrl(file)}
-                    alt={`Preview of ${file.name}`}
-                    style={{
-                      width: '100%',
-                      maxHeight: '150px',
-                      objectFit: 'contain',
-                      border: '1px solid #eee',
-                      borderRadius: '4px'
-                    }}
-                    onError={(e) => {
-                      e.target.style.display = 'none';
-                      e.target.nextSibling.style.display = 'block';
-                    }}
-                  />
-                  <div style={{
-                    display: 'none',
-                    padding: '10px',
-                    backgroundColor: '#f8f9fa',
-                    textAlign: 'center',
-                    fontSize: '12px',
-                    color: '#666'
-                  }}>
-                    Предпросмотр недоступен
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-        
-        <div className="assignment-actions" style={{ marginTop: '20px', textAlign: 'center' }}>
-          <button
-            onClick={togglePlaneAssignment}
-            style={{
-              backgroundColor: '#007bff',
-              color: 'white',
-              border: 'none',
-              padding: '10px 20px',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '14px',
-              marginRight: '10px'
-            }}
-          >
-            Завершить назначение
-          </button>
-          <div style={{ marginTop: '10px', fontSize: '12px', color: '#666' }}>
-            Назначено плоскостей: {Object.values(ctData.filePlaneAssignments).filter(p => p !== null).length} из {ctData.uploadedFiles.length}
-          </div>
-        </div>
-      </div>
-    );
   };
-  // Render measurements table
-  const renderMeasurementsTable = () => {
-    const measurementGroups = {
-      "ВНЧС (височно-нижнечелюстной сустав) - положение суставной головки в суставной ямке": [
-        "rightClosedPositionX", "rightClosedPositionY",
-        "rightOpenPositionX", "rightOpenPositionY",
-        "leftClosedPositionX", "leftClosedPositionY",
-        "leftOpenPositionX", "leftOpenPositionY"
-      ],
-      "Срезы зубов верхней и нижней челюстей в сагиттальной проекции": [
-        "toothWidthUpper", "toothWidthLower",
-        "boneThicknessUpper", "boneThicknessLower"
-      ],
-      "Pen-анализ - наклоны первых моляров": [
-        "molarInclinationUpper", "molarInclinationLower"
-      ],
-      "Ширина апикального базиса верхней и нижней челюстей": [
-        "basalWidthUpper", "basalWidthLower", "basalWidthDeficit"
-      ],
-      "Воздухоносные пути - аксиальные срезы, положение языка, измерение объема": [
-        "tonguePosition", "airwayVolume"
-      ]
+
+  // Инициализация 3D вьювера
+  useEffect(() => {
+    if (viewerMode !== '3d' || !mountRef.current || ctData.dicomFiles.length === 0) return;
+
+    // Очищаем предыдущий вьювер
+    if (mountRef.current && mountRef.current.children.length > 0) {
+      mountRef.current.innerHTML = '';
+    }
+
+    // Создаём сцену
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x1a1a1a);
+    sceneRef.current = scene;
+
+    // Камера
+    const camera = new THREE.PerspectiveCamera(
+      60,
+      mountRef.current.clientWidth / mountRef.current.clientHeight,
+      0.1,
+      1000
+    );
+    camera.position.set(0, 0, 150);
+    cameraRef.current = camera;
+
+    // Рендерер
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    mountRef.current.appendChild(renderer.domElement);
+    rendererRef.current = renderer;
+
+    // Создаём volume из срезов
+    createVolumeFromSlices();
+
+    // Orbit controls
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controlsRef.current = controls;
+
+    // Анимация
+    const animate = () => {
+      frameRef.current = requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
     };
-    return (
-      <div className="measurements-section">
-        <h3>Измерения</h3>
+    animate();
+
+    // Ресайз
+    const handleResize = () => {
+      if (!mountRef.current) return;
+      const width = mountRef.current.clientWidth;
+      const height = mountRef.current.clientHeight;
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+      renderer.setSize(width, height);
+    };
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      if (frameRef.current) {
+        cancelAnimationFrame(frameRef.current);
+      }
+      if (rendererRef.current) {
+        rendererRef.current.dispose();
+        mountRef.current?.removeChild(rendererRef.current.domElement);
+      }
+    };
+  }, [viewerMode, ctData.dicomFiles]);
+
+  // Создание 3D объёма из срезов
+  const createVolumeFromSlices = () => {
+    if (!sceneRef.current || ctData.dicomFiles.length === 0) return;
+
+    // Удаляем старый объём
+    if (volumeMeshRef.current) {
+      sceneRef.current.remove(volumeMeshRef.current);
+      volumeMeshRef.current.geometry?.dispose();
+      volumeMeshRef.current.material?.dispose();
+    }
+
+    // Создаём группу для всех срезов
+    const volumeGroup = new THREE.Group();
+    volumeGroup.name = 'volume';
+
+    // Добавляем каждый срез как плоскость
+    const sliceCount = ctData.dicomFiles.length;
+    const spacing = 2; // Расстояние между срезами
+
+    ctData.dicomFiles.forEach((slice, index) => {
+      // Создаём текстуру из данных среза
+      if (slice.pixelData) {
+        const width = slice.columns || 256;
+        const height = slice.rows || 256;
         
-        {Object.entries(measurementGroups || {}).map(([groupName, groupMeasurements]) => (
-          <div key={groupName} className="measurement-group">
-            <h4>{groupName}</h4>
-            <table>
-              <thead>
-                <tr>
-                  <th>Измерение</th>
-                  <th>Значение</th>
-                  <th>Единицы</th>
-                  <th>Нормальный диапазон</th>
-                </tr>
-              </thead>
-              <tbody>
-                {groupMeasurements.map(key => {
-                  const displayName = key
-                    .replace(/([A-Z])/g, ' $1')
-                    .replace(/^./, str => str.toUpperCase());
-                  
-                  return (
-                    <tr key={key}>
-                      <td>{displayName}</td>
-                      <td>
-                        <input
-                          type="number"
-                          step="0.1"
-                          value={ctData.measurements[key]}
-                          onChange={(e) => handleMeasurementChange(key, e.target.value)}
-                        />
-                      </td>
-                      <td>мм</td>
-                      <td>TODO</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-            <p className="measurement-description">
-              Используйте инструменты анализа (линейка, транспортир) для выполнения измерений на изображении
-            </p>
-          </div>
-        ))}
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
         
-        <div className="measurement-group">
-          <h4>Дополнительные измерения</h4>
-          <table>
-            <thead>
-              <tr>
-                <th>Измерение</th>
-                <th>Значение</th>
-                <th>Единицы</th>
-                <th>Нормальный диапазон</th>
-              </tr>
-            </thead>
-            <tbody>
-              {Object.entries(ctData.measurements || {})
-                .filter(([key]) => !Object.values(measurementGroups || {}).flat().includes(key))
-                .map(([key, value]) => {
-                  const displayName = key
-                    .replace(/([A-Z])/g, ' $1')
-                    .replace(/^./, str => str.toUpperCase());
-                  
-                  return (
-                    <tr key={key}>
-                      <td>{displayName}</td>
-                      <td>
-                        <input
-                          type="number"
-                          step="0.1"
-                          value={value}
-                          onChange={(e) => handleMeasurementChange(key, e.target.value)}
-                        />
-                      </td>
-                      <td>мм</td>
-                      <td>TODO</td>
-                    </tr>
-                  );
-                })}
-            </tbody>
-          </table>
-          <p className="measurement-description">
-            Используйте инструменты анализа (линейка, транспортир) для выполнения измерений на изображении
-          </p>
-        </div>
-      </div>
-    );
+        const imageData = ctx.createImageData(width, height);
+        // Копируем данные пикселей
+        for (let i = 0; i < slice.pixelData.length; i++) {
+          imageData.data[i] = slice.pixelData[i];
+        }
+        ctx.putImageData(imageData, 0, 0);
+        
+        const texture = new THREE.CanvasTexture(canvas);
+        
+        // Создаём плоскость для среза
+        const geometry = new THREE.PlaneGeometry(width, height);
+        const material = new THREE.MeshBasicMaterial({
+          map: texture,
+          transparent: true,
+          opacity: 0.9,
+          side: THREE.DoubleSide
+        });
+        
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.position.z = (index - sliceCount / 2) * spacing;
+        volumeGroup.add(mesh);
+      }
+    });
+
+    // Центрируем объём
+    const box = new THREE.Box3().setFromObject(volumeGroup);
+    const center = box.getCenter(new THREE.Vector3());
+    volumeGroup.children.forEach(child => {
+      child.position.sub(center);
+    });
+
+    // Добавляем подсветку
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+    sceneRef.current.add(ambientLight);
+
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+    directionalLight.position.set(1, 1, 1);
+    sceneRef.current.add(directionalLight);
+
+    sceneRef.current.add(volumeGroup);
+    volumeMeshRef.current = volumeGroup;
   };
+
+  // Отрисовка среза на canvas
+  useEffect(() => {
+    if (viewerMode !== 'slices' || !canvasRef.current || ctData.dicomFiles.length === 0) return;
+
+    const slice = ctData.dicomFiles[currentSlice];
+    if (!slice || !slice.pixelData) return;
+
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    const width = slice.columns || 512;
+    const height = slice.rows || 512;
+
+    canvas.width = width;
+    canvas.height = height;
+
+    const imageData = ctx.createImageData(width, height);
+    
+    // Копируем данные пикселей
+    for (let i = 0; i < slice.pixelData.length && i < imageData.data.length; i++) {
+      imageData.data[i] = slice.pixelData[i];
+    }
+    
+    ctx.putImageData(imageData, 0, 0);
+  }, [viewerMode, currentSlice, ctData.dicomFiles]);
+
+  // Обработка успешной загрузки архива
+  const handleArchiveUploadSuccess = async (result) => {
+    try {
+      setLoading(true);
+      
+      const { uploadedFiles } = result;
+      
+      if (uploadedFiles.length === 0) {
+        setCtData(prev => ({ ...prev, error: 'Из архива не было загружено ни одного файла' }));
+        return;
+      }
+
+      // Загружаем срезы
+      const slices = await loadSlicesFromFiles(uploadedFiles);
+      
+      if (slices.length === 0) {
+        setCtData(prev => ({ ...prev, error: 'Не удалось обработать DICOM файлы' }));
+        return;
+      }
+
+      // Сохраняем в localStorage
+      const ctInfo = {
+        scanDate: result.scanDate || new Date().toISOString().split('T')[0],
+        archiveName: result.archiveName,
+        dicomFiles: uploadedFiles,
+        loaded: true
+      };
+      
+      localStorage.setItem(`ct_data_${patientId}`, JSON.stringify({
+        ...ctInfo,
+        dicomFiles: uploadedFiles.map(f => ({
+          id: f.id,
+          name: f.name,
+          data_url: f.data_url,
+          sliceNumber: f.sliceNumber
+        }))
+      }));
+
+      setCtData({
+        scanDate: ctInfo.scanDate,
+        archiveName: ctInfo.archiveName,
+        dicomFiles: slices,
+        loaded: true,
+        error: null
+      });
+      
+      setCurrentSlice(Math.floor(slices.length / 2));
+      
+      alert(`Загружено ${slices.length} срезов КТ`);
+    } catch (error) {
+      console.error('Error processing CT:', error);
+      setCtData(prev => ({ ...prev, error: error.message }));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Обработка ошибки загрузки
+  const handleArchiveUploadError = (errorMessage) => {
+    setCtData(prev => ({ ...prev, error: errorMessage }));
+  };
+
+  // Удаление КТ
+  const handleDeleteCT = () => {
+    if (window.confirm('Вы уверены, что хотите удалить данные КТ?')) {
+      localStorage.removeItem(`ct_data_${patientId}`);
+      setCtData({
+        scanDate: null,
+        archiveName: null,
+        dicomFiles: [],
+        loaded: false,
+        error: null
+      });
+      setCurrentSlice(0);
+    }
+  };
+
+  // Форматирование даты
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('ru-RU');
+  };
+
   return (
     <div className="ct-module">
       <h2>Модуль КТ</h2>
       
-      {error && <div className="error-message">{error}</div>}
-      
-      <div className="patient-info">
-        <h3>Информация о пациенте</h3>
-        <p><strong>Имя:</strong> {ctData.patientName}</p>
-        <p><strong>Дата анализа:</strong> {ctData.analysisDate}</p>
-      </div>
-      
-      <div className="ct-upload">
-        <h3>КТ скан</h3>
-        {ctData.ctScan ? (
-          <div>
-            <p>Загруженный КТ скан: {ctData.ctScan}</p>
-            <div style={{ marginTop: '10px' }}>
+      {ctData.error && (
+        <div className="error-message" style={{ 
+          padding: '15px', 
+          backgroundColor: '#fee2e2', 
+          color: '#dc2626',
+          borderRadius: '8px',
+          marginBottom: '20px'
+        }}>
+          {ctData.error}
+          <button 
+            onClick={() => setCtData(prev => ({ ...prev, error: null }))}
+            style={{ marginLeft: '10px', padding: '5px 10px' }}
+          >
+            Закрыть
+          </button>
+        </div>
+      )}
+
+      {!ctData.loaded ? (
+        <div className="ct-upload-section">
+          <h3>Загрузка КТ</h3>
+          <p style={{ color: '#666', marginBottom: '20px' }}>
+            Загрузите ZIP архив с DICOM файлами компьютерной томографии
+          </p>
+          
+          <ArchiveUpload
+            onUploadSuccess={handleArchiveUploadSuccess}
+            onUploadError={handleArchiveUploadError}
+            patientId={patientId}
+            enableBackendUpload={false}
+          />
+        </div>
+      ) : (
+        <div className="ct-viewer-section">
+          <div className="ct-info" style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '20px',
+            padding: '15px',
+            backgroundColor: '#f3f4f6',
+            borderRadius: '8px'
+          }}>
+            <div>
+              <h3 style={{ margin: '0 0 5px 0' }}>КТ от {formatDate(ctData.scanDate)}</h3>
+              <p style={{ margin: 0, color: '#666' }}>
+                Архив: {ctData.archiveName} | Срезов: {ctData.dicomFiles.length}
+              </p>
+            </div>
+            <div style={{ display: 'flex', gap: '10px' }}>
               <button
-                onClick={() => setCtData(prev => ({ ...prev, ctScan: null, selectedFile: null, uploadedFiles: [] }))}
-                style={{ marginRight: '10px', backgroundColor: '#dc3545', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '4px' }}
+                onClick={() => setViewerMode(viewerMode === '3d' ? 'slices' : '3d')}
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: '#3b82f6',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer'
+                }}
               >
-                Удалить КТ скан
+                {viewerMode === '3d' ? 'Показать срезы' : 'Показать 3D'}
               </button>
-              {ctData.uploadedFiles.length > 0 && (
-                <button
-                  onClick={togglePlaneAssignment}
-                  style={{ backgroundColor: '#007bff', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '4px' }}
-                >
-                  {ctData.showPlaneAssignment ? 'Скрыть' : 'Показать'} назначение плоскостей
-                </button>
+              <button
+                onClick={handleDeleteCT}
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: '#ef4444',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer'
+                }}
+              >
+                Удалить КТ
+              </button>
+            </div>
+          </div>
+
+          {/* 3D Viewer */}
+          {viewerMode === '3d' && (
+            <div 
+              ref={mountRef} 
+              style={{
+                width: '100%',
+                height: '500px',
+                backgroundColor: '#1a1a1a',
+                borderRadius: '8px',
+                overflow: 'hidden'
+              }}
+            >
+              {ctData.dicomFiles.length === 0 && (
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  height: '100%',
+                  color: '#999'
+                }}>
+                  Нет данных для отображения
+                </div>
               )}
             </div>
-          </div>
-        ) : (
-          <div>
-            <ArchiveUpload
-              onUploadSuccess={handleArchiveUploadSuccess}
-              onUploadError={handleArchiveUploadError}
-            />
-          </div>
-        )}
-      </div>
-      
-      {ctData.ctScan && (
-        <>
-          {renderPlaneAssignment()}
-          
-          {renderViewer()}
-          
-          {renderMeasurementsTable()}
-          
-          <div className="report-section">
-            <h3>Отчет</h3>
-            <div className="report-content">
-              <p>Здесь будет сгенерирован отчет по результатам анализа КТ.</p>
-              <button onClick={() => alert('Отчет будет сгенерирован и сохранен в системе.')}>
-                Сгенерировать отчет
-              </button>
+          )}
+
+          {/* Slices Viewer */}
+          {viewerMode === 'slices' && (
+            <div className="slices-viewer" style={{
+              width: '100%',
+              backgroundColor: '#1a1a1a',
+              borderRadius: '8px',
+              padding: '20px'
+            }}>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'center',
+                marginBottom: '20px'
+              }}>
+                <canvas
+                  ref={canvasRef}
+                  style={{
+                    maxWidth: '100%',
+                    maxHeight: '450px',
+                    imageRendering: 'pixelated'
+                  }}
+                />
+              </div>
+              
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '20px',
+                color: 'white'
+              }}>
+                <button
+                  onClick={() => setCurrentSlice(Math.max(0, currentSlice - 1))}
+                  disabled={currentSlice === 0}
+                  style={{
+                    padding: '8px 16px',
+                    backgroundColor: currentSlice === 0 ? '#4b5563' : '#3b82f6',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: currentSlice === 0 ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  ← Предыдущий
+                </button>
+                
+                <div style={{ minWidth: '150px', textAlign: 'center' }}>
+                  Срез {currentSlice + 1} из {ctData.dicomFiles.length}
+                </div>
+                
+                <input
+                  type="range"
+                  min="0"
+                  max={ctData.dicomFiles.length - 1}
+                  value={currentSlice}
+                  onChange={(e) => setCurrentSlice(parseInt(e.target.value))}
+                  style={{ width: '200px' }}
+                />
+                
+                <button
+                  onClick={() => setCurrentSlice(Math.min(ctData.dicomFiles.length - 1, currentSlice + 1))}
+                  disabled={currentSlice === ctData.dicomFiles.length - 1}
+                  style={{
+                    padding: '8px 16px',
+                    backgroundColor: currentSlice === ctData.dicomFiles.length - 1 ? '#4b5563' : '#3b82f6',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: currentSlice === ctData.dicomFiles.length - 1 ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  Следующий →
+                </button>
+              </div>
             </div>
-          </div>
-        </>
+          )}
+
+          {/* Loading indicator */}
+          {loading && (
+            <div style={{
+              position: 'fixed',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              backgroundColor: 'rgba(0,0,0,0.8)',
+              color: 'white',
+              padding: '20px 40px',
+              borderRadius: '8px',
+              zIndex: 1000
+            }}>
+              Загрузка данных КТ...
+            </div>
+          )}
+        </div>
       )}
-      
-      <div className="actions">
-        <button onClick={handleSave} disabled={!ctData.ctScan}>
-          Сохранить измерения
-        </button>
-      </div>
     </div>
   );
 };
+
 export default CTModule;
