@@ -1,5 +1,6 @@
 
 import React, { useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { usePatientNavigation } from '../hooks/usePatientNavigation';
 import BiometryStateProvider from './biometry/BiometryStateProvider';
 import BiometryPointsManager from './biometry/BiometryPointsManager';
@@ -16,8 +17,9 @@ import {
 import './BiometryModule.css';
 
 const BiometryModule = () => {
+  const { id } = useParams();
   // Обрабатываем навигацию с данными пациента
-  usePatientNavigation();
+  usePatientNavigation(id);
 
   return (
     <BiometryStateProvider>
