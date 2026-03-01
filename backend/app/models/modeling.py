@@ -13,7 +13,9 @@ from app.schemas.shared_enums import ModelingStatus, ModelType, ModelFormat
 
 class ThreeDModel(BaseModel3D):
     __tablename__ = "three_d_models"
-    pass
+    
+    # Relationship to Patient
+    patient = relationship("Patient", back_populates="three_d_models")
 
 
 class ModelingSession(Base):
@@ -53,3 +55,9 @@ class ModelingSession(Base):
     bite1 = relationship("ThreeDModel", foreign_keys=[bite1_id])
     bite2 = relationship("ThreeDModel", foreign_keys=[bite2_id])
     occlusion_pad = relationship("ThreeDModel", foreign_keys=[occlusion_pad_id])
+
+
+# Add relationships to Patient model
+from app.models.patient import Patient
+Patient.three_d_models = relationship("ThreeDModel", back_populates="patient")
+Patient.modeling_sessions = relationship("ModelingSession", back_populates="patient")

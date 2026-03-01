@@ -26,7 +26,8 @@ class BiometryModel(BaseModel3D):
     # Статус обработки
     status = Column(Enum(BiometryStatus, name="biometry_status"), default=BiometryStatus.UPLOADED)
     
-    # Relationship to BiometrySession
+    # Relationships
+    patient = relationship("Patient", back_populates="biometry_models")
     session = relationship("BiometrySession", back_populates="model")
 
 
@@ -60,3 +61,9 @@ class BiometrySession(Base):
     # Relationships
     patient = relationship("Patient", back_populates="biometry_sessions")
     model = relationship("BiometryModel", back_populates="session")
+
+
+# Add relationships to Patient model
+from app.models.patient import Patient
+Patient.biometry_models = relationship("BiometryModel", back_populates="patient")
+Patient.biometry_sessions = relationship("BiometrySession", back_populates="patient")
