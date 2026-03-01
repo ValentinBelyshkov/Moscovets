@@ -3,7 +3,7 @@ from typing import Optional, List
 from pydantic import BaseModel, Field, field_validator
 from enum import Enum as PyEnum
 
-from app.models.file import MedicalFileType, FileVersionType
+from app.schemas.shared_enums import MedicalFileType, FileVersionType
 
 # Enum schemas for API
 class MedicalFileTypeSchema(str, PyEnum):

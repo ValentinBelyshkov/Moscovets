@@ -1,15 +1,19 @@
-from datetime import date, datetime
-from typing import Optional, Union
-from pydantic import BaseModel, ConfigDict, field_validator
-from app.models.patient import (
-    Gender, LocalityType, MaritalStatus, EducationLevel,
-    ProfileType, LipPosition, ChinShift
-)
+"""
+Pydantic schemas for patient module.
+"""
+from datetime import datetime
+from typing import Optional
 
-# Shared properties
+from pydantic import BaseModel, ConfigDict, field_validator
+
+from app.schemas.shared_enums import Gender, LocalityType, MaritalStatus, EducationLevel, ProfileType, LipPosition, ChinShift
+from app.schemas.shared_validators import parse_date
+
+
 class PatientBase(BaseModel):
+    """Base schema for patients"""
     full_name: str
-    birth_date: date
+    birth_date: datetime
     gender: Gender
     contact_info: Optional[str] = None
     complaints: Optional[str] = None
@@ -45,21 +49,26 @@ class PatientBase(BaseModel):
     profile_type: Optional[ProfileType] = None
     upper_lip_position: Optional[LipPosition] = None
     
+    model_config = ConfigDict(
+        protected_namespaces=(),
+        use_enum_values=False
+    )
+    
     @field_validator('birth_date', mode='before')
     @classmethod
-    def parse_birth_date(cls, value):
-        if isinstance(value, str):
-            return datetime.strptime(value, '%Y-%m-%d').date()
-        return value
+    def validate_birth_date(cls, value):
+        return parse_date(value)
 
-# Properties to receive via API on creation
+
 class PatientCreate(PatientBase):
+    """Schema for creating patient"""
     pass
 
-# Properties to receive via API on update
+
 class PatientUpdate(BaseModel):
+    """Schema for updating patient"""
     full_name: Optional[str] = None
-    birth_date: Optional[date] = None
+    birth_date: Optional[datetime] = None
     gender: Optional[Gender] = None
     contact_info: Optional[str] = None
     complaints: Optional[str] = None
@@ -97,15 +106,16 @@ class PatientUpdate(BaseModel):
     
     @field_validator('birth_date', mode='before')
     @classmethod
-    def parse_birth_date(cls, value):
-        if isinstance(value, str):
-            return datetime.strptime(value, '%Y-%m-%d').date()
-        return value
+    def validate_birth_date(cls, value):
+        return parse_date(value)
 
-# Properties to return via API
+
 class Patient(PatientBase):
-    model_config = ConfigDict(from_attributes=True, protected_namespaces=())
-    
+    """Schema for patient response"""
     id: int
     created_at: datetime
     updated_at: datetime
+    
+    class Config:
+        from_attributes = True
+        protected_namespaces = ()
