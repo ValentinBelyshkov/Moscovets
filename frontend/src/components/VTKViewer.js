@@ -458,7 +458,13 @@ const VTKViewer = ({ dataUrl, activeTool, viewerMode, windowLevel, zoomLevel, pa
       // Fetch image data
       let response;
       try {
-        response = await fetch(url);
+        const token = localStorage.getItem('token');
+        const shouldAttachAuth = !url.startsWith('data:') && !url.startsWith('blob:');
+        const requestOptions = token && shouldAttachAuth
+          ? { headers: { Authorization: `Bearer ${token}` } }
+          : undefined;
+
+        response = await fetch(url, requestOptions);
       } catch (fetchError) {
         console.error('Network error when fetching image:', fetchError);
         throw new Error(`Не удалось загрузить изображение: сетевая ошибка - ${fetchError.message || 'Неизвестная сетевая ошибка'}`);

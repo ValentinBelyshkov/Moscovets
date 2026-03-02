@@ -1,8 +1,8 @@
 import { useState, useRef } from 'react';
 
-export const useCTState = () => {
+export const useCTState = (patientId = 1) => {
   const [ctData, setCtData] = useState({
-    patientId: 1,
+    patientId,
     patientName: 'Иванов Иван Иванович',
     scanDate: new Date().toISOString().split('T')[0],
     analysisDate: new Date().toISOString().split('T')[0],
