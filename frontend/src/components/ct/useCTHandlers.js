@@ -1,7 +1,14 @@
 import localMedicalRecordService from '../../services/localMedicalRecordService';
 import ctService from '../../services/ctService';
 
-export const useCTHandlers = ({ ctData, setCtData, setError, setMeasurements }) => {
+export const useCTHandlers = ({
+  ctData,
+  setCtData,
+  setError,
+  setMeasurements,
+  setActiveTool,
+  setAnnotations
+}) => {
   const handleScanDateSelect = async (scanDate) => {
     if (!scanDate) {
       return;
@@ -74,6 +81,7 @@ export const useCTHandlers = ({ ctData, setCtData, setError, setMeasurements }) 
       scanDate: result.scanDate || prev.scanDate,
       storagePath: result.storagePath || null
     }));
+    setError(null);
 
     const message = `Успешно загружено ${result.totalExtracted} DICOM файлов из архива!`;
     if (result.storagePath) {
@@ -160,7 +168,7 @@ export const useCTHandlers = ({ ctData, setCtData, setError, setMeasurements }) 
   };
 
   const handleToolSelect = (tool) => {
-    setCtData(prev => ({ ...prev, activeTool: tool }));
+    setActiveTool(tool);
   };
 
   const handlePlaneSelect = (plane) => {
@@ -172,12 +180,13 @@ export const useCTHandlers = ({ ctData, setCtData, setError, setMeasurements }) 
         setError(`Не удалось загрузить данные для плоскости ${plane}: отсутствует URL файла`);
         return;
       }
-      
+
       setCtData(prev => ({
         ...prev,
         selectedFile: selectedFile,
         selectedPlane: plane
       }));
+      setError(null);
     } else {
       setError(`Плоскость ${plane} недоступна`);
     }
@@ -197,12 +206,9 @@ export const useCTHandlers = ({ ctData, setCtData, setError, setMeasurements }) 
 
   const handleAnnotationAdd = (annotation) => {
     const plane = ctData.selectedPlane || 'sagittal';
-    setCtData(prev => ({
+    setAnnotations(prev => ({
       ...prev,
-      annotations: {
-        ...prev.annotations,
-        [plane]: [...(prev.annotations[plane] || []), annotation]
-      }
+      [plane]: [...(prev[plane] || []), annotation]
     }));
   };
 

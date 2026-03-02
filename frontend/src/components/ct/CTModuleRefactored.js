@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import VTKViewer from '../VTKViewer';
 import ArchiveUpload from '../ArchiveUpload';
 import CTViewerControls from './CTViewerControls';
@@ -6,11 +7,28 @@ import CTMeasurementsPanel from './CTMeasurementsPanel';
 import CTScanDateSelector from './CTScanDateSelector';
 import { useCTState } from './useCTState';
 import { useCTHandlers } from './useCTHandlers';
+import { usePatientNavigation } from '../../hooks/usePatientNavigation';
+import { useData } from '../../contexts/DataContext';
 import '../ArchiveUpload.css';
 
 const CTModuleRefactored = () => {
-  const state = useCTState();
+  const { id } = useParams();
+  const patientId = id ? parseInt(id, 10) : 1;
+
+  usePatientNavigation(patientId);
+
+  const { currentPatient } = useData();
+
+  const state = useCTState(patientId);
   const handlers = useCTHandlers(state);
+
+  useEffect(() => {
+    state.setCtData(prev => ({
+      ...prev,
+      patientId,
+      patientName: currentPatient?.full_name || currentPatient?.fullName || prev.patientName
+    }));
+  }, [patientId, currentPatient, state.setCtData]);
 
   const {
     ctData,
@@ -22,6 +40,7 @@ const CTModuleRefactored = () => {
     panOffset,
     setPanOffset,
     activeTool,
+    annotations,
     error,
     containerRef
   } = state;
@@ -118,14 +137,15 @@ const CTModuleRefactored = () => {
         <div ref={containerRef} className="viewer-display">
           {imageUrl ? (
             <VTKViewer
-              imageUrl={imageUrl}
-              plane={ctData.selectedPlane || 'sagittal'}
+              dataUrl={imageUrl}
+              viewerMode={ctData.selectedPlane || 'sagittal'}
               activeTool={activeTool}
               windowLevel={windowLevel}
               zoomLevel={zoomLevel}
               panOffset={panOffset}
               onMeasurementComplete={handleMeasurementComplete}
               onAnnotationAdd={handleAnnotationAdd}
+              annotations={annotations[ctData.selectedPlane || 'sagittal'] || []}
             />
           ) : (
             <div className="no-image-message">
