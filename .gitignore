@@ -59,3 +59,7 @@ yarn-error.log*
 
 # OS
 Thumbs.db
+
+# DWV Workers (copied from node_modules during build)
+# We keep them in public/dwv-workers for runtime but maps can be excluded
+*.map
