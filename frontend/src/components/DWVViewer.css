@@ -1,0 +1,425 @@
+.dwv-viewer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: #1a1a1a;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Панель инструментов */
+.dwv-toolbar {
+  background-color: #2d2d2d;
+  padding: 12px 16px;
+  border-bottom: 1px solid #404040;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  align-items: flex-start;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.toolbar-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.toolbar-section h4 {
+  margin: 0 0 8px 0;
+  color: #e0e0e0;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.tools-section {
+  flex: 1;
+  min-width: 300px;
+}
+
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+}
+
+.tool-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 4px;
+  background-color: #404040;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 65px;
+}
+
+.tool-button:hover {
+  background-color: #505050;
+  border-color: #606060;
+}
+
+.tool-button.active {
+  background-color: #3b82f6;
+  border-color: #60a5fa;
+}
+
+.tool-icon {
+  font-size: 16px;
+  margin-bottom: 3px;
+}
+
+.tool-label {
+  font-size: 9px;
+  color: #e0e0e0;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.tool-button.active .tool-label {
+  color: white;
+}
+
+/* Кнопки фигур */
+.shape-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.shape-button {
+  padding: 6px 10px;
+  background-color: #404040;
+  border: none;
+  border-radius: 4px;
+  color: #e0e0e0;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-size: 11px;
+  text-align: left;
+}
+
+.shape-button:hover {
+  background-color: #505050;
+}
+
+/* Кнопки фильтров */
+.filter-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.filter-button {
+  padding: 6px 10px;
+  background-color: #404040;
+  border: none;
+  border-radius: 4px;
+  color: #e0e0e0;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-size: 11px;
+  text-align: left;
+}
+
+.filter-button:hover {
+  background-color: #505050;
+}
+
+/* Кнопки управления */
+.controls-section {
+  min-width: 120px;
+}
+
+.control-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.control-button {
+  padding: 6px 10px;
+  background-color: #404040;
+  border: none;
+  border-radius: 4px;
+  color: #e0e0e0;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-size: 14px;
+}
+
+.control-button:hover {
+  background-color: #505050;
+}
+
+.control-button.reset {
+  background-color: #ef4444;
+}
+
+.control-button.reset:hover {
+  background-color: #dc2626;
+}
+
+.scale-display {
+  color: #e0e0e0;
+  font-size: 12px;
+  min-width: 45px;
+  text-align: center;
+  font-weight: 500;
+}
+
+/* Контролы окна/уровня */
+.wl-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.wl-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #e0e0e0;
+  font-size: 11px;
+}
+
+.wl-row span:first-child {
+  min-width: 50px;
+}
+
+.wl-row span:last-of-type {
+  min-width: 40px;
+  text-align: center;
+  font-weight: 500;
+}
+
+.wl-row button {
+  padding: 2px 8px;
+  background-color: #404040;
+  border: none;
+  border-radius: 3px;
+  color: #e0e0e0;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.wl-row button:hover {
+  background-color: #505050;
+}
+
+/* Область просмотра */
+.dwv-container-wrapper {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #000;
+}
+
+.dwv-viewport {
+  width: 100%;
+  height: 100%;
+}
+
+.dwv-viewport canvas {
+  max-width: 100%;
+  max-height: 100%;
+  image-rendering: pixelated;
+}
+
+/* Индикатор загрузки */
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.85);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  color: white;
+}
+
+.loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #404040;
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Пустое состояние */
+.empty-state {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #808080;
+  text-align: center;
+}
+
+/* Панель метаданных */
+.metadata-panel {
+  background-color: #2d2d2d;
+  padding: 12px 16px;
+  border-top: 1px solid #404040;
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+.metadata-panel h4 {
+  margin: 0 0 10px 0;
+  color: #e0e0e0;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.metadata-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 6px 16px;
+}
+
+.metadata-item {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.metadata-label {
+  color: #9ca3af;
+  font-size: 11px;
+  min-width: 80px;
+  flex-shrink: 0;
+}
+
+.metadata-value {
+  color: #e0e0e0;
+  font-size: 11px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Scrollbar стили */
+.dwv-toolbar::-webkit-scrollbar,
+.metadata-panel::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.dwv-toolbar::-webkit-scrollbar-track,
+.metadata-panel::-webkit-scrollbar-track {
+  background: #2d2d2d;
+}
+
+.dwv-toolbar::-webkit-scrollbar-thumb,
+.metadata-panel::-webkit-scrollbar-thumb {
+  background: #4b5563;
+  border-radius: 3px;
+}
+
+.dwv-toolbar::-webkit-scrollbar-thumb:hover,
+.metadata-panel::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+}
+
+/* DWV внутренние стили */
+.dwv-layerContainer {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.dwv-drawDiv {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.dwv-overlay {
+  position: absolute;
+  pointer-events: none;
+}
+
+.dwv-plot {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background-color: rgba(0, 0, 0, 0.7);
+  padding: 8px;
+  border-radius: 4px;
+  color: white;
+  font-size: 11px;
+}
+
+.dwv-info {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background-color: rgba(0, 0, 0, 0.7);
+  padding: 8px;
+  border-radius: 4px;
+  color: white;
+  font-size: 11px;
+}
+
+/* Адаптивность */
+@media (max-width: 1024px) {
+  .tools-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  
+  .dwv-toolbar {
+    max-height: 250px;
+  }
+}
+
+@media (max-width: 768px) {
+  .tools-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .tool-button {
+    min-width: 55px;
+    padding: 6px 2px;
+  }
+  
+  .tool-icon {
+    font-size: 14px;
+  }
+  
+  .tool-label {
+    font-size: 8px;
+  }
+  
+  .dwv-toolbar {
+    padding: 8px;
+    gap: 12px;
+  }
+  
+  .metadata-grid {
+    grid-template-columns: 1fr;
+  }
+}
