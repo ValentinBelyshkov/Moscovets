@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import * as dwv from 'dwv';
+import dwv from 'dwv';
 import './DWVViewer.css';
 
 const DWVViewer = ({ files, onLoaded, onError }) => {
