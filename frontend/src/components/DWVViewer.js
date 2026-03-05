@@ -211,7 +211,7 @@ const DWVViewer = ({ files, onLoaded, onError }) => {
         appRef.current = null;
       }
     };
-  }, []);
+  }, [onLoaded, onError]);
 
   // Загрузка файлов
   useEffect(() => {
@@ -323,7 +323,7 @@ const DWVViewer = ({ files, onLoaded, onError }) => {
     };
 
     loadFiles();
-  }, [files, onError]);
+  }, [files, onError, onLoaded]);
 
   // Смена инструмента
   const handleToolChange = useCallback((toolName) => {
