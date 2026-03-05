@@ -8,7 +8,7 @@ import './CTModule.css';
 const CTModule = () => {
   const { id } = useParams();
   const patientId = id ? parseInt(id) : 1;
-  
+
   usePatientNavigation(patientId);
 
   const [ctData, setCtData] = useState({
@@ -23,6 +23,67 @@ const CTModule = () => {
   const [dragActive, setDragActive] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [archiveInfo, setArchiveInfo] = useState(null);
+
+  // Валидация DICOM файлов
+  const validateDicomFiles = (files) => {
+    console.log('[CTModule] Validating DICOM files:', files.length);
+
+    const errors = [];
+    const validFiles = [];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+
+      // Проверяем что это File объект
+      if (!(file instanceof File)) {
+        errors.push(`Файл ${i + 1} не является File объектом: ${file?.constructor?.name}`);
+        continue;
+      }
+
+      // Проверяем имя файла
+      if (!file.name) {
+        errors.push(`Файл ${i + 1} не имеет имени`);
+        continue;
+      }
+
+      // Проверяем расширение
+      const lowerName = file.name.toLowerCase();
+      if (!lowerName.endsWith('.dcm') && !lowerName.endsWith('.dicom')) {
+        errors.push(`Файл "${file.name}" имеет неверное расширение (ожидаются .dcm или .dicom)`);
+      }
+
+      // Проверяем размер
+      if (file.size === 0) {
+        errors.push(`Файл "${file.name}" имеет размер 0 байт`);
+        continue;
+      }
+
+      // Проверяем что файл читается
+      if (file.size > 0) {
+        try {
+          // Пытаемся прочитать первые 132 байта (DICOM preamble)
+          const reader = new FileReader();
+          reader.readAsArrayBuffer(file.slice(0, 132));
+        } catch (e) {
+          console.warn('[CTModule] Warning: Could not read file:', file.name, e);
+        }
+      }
+
+      console.log('[CTModule] File validated:', {
+        name: file.name,
+        size: file.size,
+        type: file.type
+      });
+
+      validFiles.push(file);
+    }
+
+    return {
+      valid: errors.length === 0,
+      errors,
+      validFiles
+    };
+  };
 
   // Проверка загруженных КТ при монтировании
   useEffect(() => {
@@ -68,16 +129,39 @@ const CTModule = () => {
 
   // Загрузка файлов из сохраненных blob
   const loadFilesFromBlobs = async (fileBlobs) => {
+    console.log('[CTModule] Loading files from blobs. Total blobs:', fileBlobs.length);
     const files = [];
-    for (const blobData of fileBlobs) {
+    for (let i = 0; i < fileBlobs.length; i++) {
+      const blobData = fileBlobs[i];
       try {
+        console.log('[CTModule] Reconstructing file from blob:', {
+          index: i + 1,
+          name: blobData.name,
+          type: blobData.type,
+          dataLength: blobData.data?.length
+        });
+
         const blob = new Blob([new Uint8Array(blobData.data)], { type: blobData.type });
+        console.log('[CTModule] Blob created:', {
+          size: blob.size,
+          type: blob.type
+        });
+
         const file = new File([blob], blobData.name, { type: blobData.type });
+        console.log('[CTModule] File object reconstructed:', {
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          constructor: file.constructor.name
+        });
+
         files.push(file);
       } catch (e) {
-        console.warn('Error loading file from blob:', e);
+        console.error('[CTModule] Error loading file from blob:', blobData.name, e);
+        console.error('[CTModule] Error stack:', e.stack);
       }
     }
+    console.log('[CTModule] Successfully reconstructed files from blobs:', files.length);
     return files;
   };
 
@@ -138,40 +222,78 @@ const CTModule = () => {
       setLoading(true);
       setCtData(prev => ({ ...prev, error: null }));
 
+      console.log('[CTModule] Starting ZIP archive processing:', {
+        fileName: zipFile.name,
+        fileSize: zipFile.size,
+        fileType: zipFile.type,
+        lastModified: zipFile.lastModified
+      });
+
       const zip = new JSZip();
       const zipContent = await zip.loadAsync(zipFile);
-      
+
+      console.log('[CTModule] ZIP loaded. Total entries:', Object.keys(zipContent.files).length);
+
       const dicomFiles = [];
       let totalSize = 0;
-      
+
       // Извлекаем DICOM файлы из архива
       for (const [relativePath, zipEntry] of Object.entries(zipContent.files || {})) {
-        if (zipEntry.dir) continue;
-        
+        if (zipEntry.dir) {
+          console.log('[CTModule] Skipping directory:', relativePath);
+          continue;
+        }
+
         const fileName = zipEntry.name.toLowerCase();
         if (fileName.endsWith('.dcm') || fileName.endsWith('.dicom')) {
           try {
+            console.log('[CTModule] Extracting DICOM file:', {
+              name: zipEntry.name,
+              size: zipEntry._data?.uncompressedSize,
+              compressedSize: zipEntry._data?.compressedSize,
+              date: zipEntry.date
+            });
+
             const blob = await zipEntry.async('blob');
+            console.log('[CTModule] Blob created:', {
+              size: blob.size,
+              type: blob.type
+            });
+
             const file = new File([blob], zipEntry.name, {
               type: 'application/dicom',
               lastModified: zipEntry.date?.getTime() || Date.now()
             });
-            
+
+            console.log('[CTModule] File object created:', {
+              name: file.name,
+              size: file.size,
+              type: file.type,
+              lastModified: file.lastModified,
+              constructor: file.constructor.name
+            });
+
             dicomFiles.push(file);
             totalSize += file.size;
           } catch (error) {
-            console.warn(`Ошибка при извлечении файла ${zipEntry.name}:`, error);
+            console.error('[CTModule] Ошибка при извлечении файла', zipEntry.name, ':', error);
           }
+        } else {
+          console.log('[CTModule] Skipping non-DICOM file:', zipEntry.name);
         }
       }
-      
+
+      console.log('[CTModule] Extraction complete. DICOM files found:', dicomFiles.length);
+      console.log('[CTModule] Total size:', totalSize, 'bytes');
+
       if (dicomFiles.length === 0) {
-        throw new Error('В архиве не найдено DICOM файлов');
+        throw new Error('В архиве не найдено DICOM файлов (.dcm или .dicom)');
       }
 
       // Сортируем файлы по имени (обычно соответствует порядку срезов)
       dicomFiles.sort((a, b) => a.name.localeCompare(b.name));
-      
+      console.log('[CTModule] Files sorted. First file:', dicomFiles[0]?.name, 'Last file:', dicomFiles[dicomFiles.length - 1]?.name);
+
       setSelectedFiles(dicomFiles);
       setArchiveInfo({
         name: zipFile.name,
@@ -179,9 +301,12 @@ const CTModule = () => {
         dicomFiles: dicomFiles.length,
         size: totalSize
       });
-      
+
+      console.log('[CTModule] ZIP processing completed successfully');
+
     } catch (error) {
-      console.error('Error processing ZIP archive:', error);
+      console.error('[CTModule] Error processing ZIP archive:', error);
+      console.error('[CTModule] Error stack:', error.stack);
       setCtData(prev => ({ ...prev, error: error.message }));
     } finally {
       setLoading(false);
@@ -202,16 +327,31 @@ const CTModule = () => {
     try {
       setLoading(true);
 
+      console.log('[CTModule] Loading DICOM into viewer. Files:', selectedFiles.length);
+
       // Сохраняем файлы в localStorage для persistency
       // Конвертируем файлы в blob для хранения
+      console.log('[CTModule] Converting files to localStorage format...');
       const fileBlobs = await Promise.all(
         selectedFiles.map(async (file) => {
-          const arrayBuffer = await file.arrayBuffer();
-          return {
-            name: file.name,
-            type: file.type,
-            data: Array.from(new Uint8Array(arrayBuffer))
-          };
+          try {
+            const arrayBuffer = await file.arrayBuffer();
+            const uint8Array = new Uint8Array(arrayBuffer);
+            console.log('[CTModule] Converted file:', {
+              name: file.name,
+              originalSize: file.size,
+              arrayBufferSize: arrayBuffer.byteLength,
+              uint8ArrayLength: uint8Array.length
+            });
+            return {
+              name: file.name,
+              type: file.type,
+              data: Array.from(uint8Array)
+            };
+          } catch (error) {
+            console.error('[CTModule] Error converting file', file.name, ':', error);
+            throw error;
+          }
         })
       );
 
@@ -222,8 +362,24 @@ const CTModule = () => {
         fileBlobs: fileBlobs,
         loaded: true
       };
-      
+
+      console.log('[CTModule] Saving to localStorage:', {
+        patientId,
+        dataLength: JSON.stringify(ctInfo).length,
+        filesCount: selectedFiles.length
+      });
+
       localStorage.setItem(`ct_data_${patientId}`, JSON.stringify(ctInfo));
+
+      console.log('[CTModule] Setting ctData state with files:');
+      selectedFiles.forEach((f, i) => {
+        console.log(`[CTModule]   File ${i + 1}:`, {
+          name: f.name,
+          size: f.size,
+          type: f.type,
+          constructor: f.constructor.name
+        });
+      });
 
       setCtData({
         ...ctInfo,
@@ -231,8 +387,11 @@ const CTModule = () => {
         error: null
       });
 
+      console.log('[CTModule] DICOM loading completed successfully');
+
     } catch (error) {
-      console.error('Error loading DICOM:', error);
+      console.error('[CTModule] Error loading DICOM:', error);
+      console.error('[CTModule] Error stack:', error.stack);
       setCtData(prev => ({ ...prev, error: error.message }));
     } finally {
       setLoading(false);
@@ -509,11 +668,37 @@ const CTModule = () => {
             overflow: 'hidden',
             boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
           }}>
-            <DWVViewer
-              files={ctData.dicomFiles}
-              onLoaded={handleDWVLoaded}
-              onError={handleDWVError}
-            />
+            {(() => {
+              // Валидация файлов перед передачей в DWV
+              if (ctData.dicomFiles && ctData.dicomFiles.length > 0) {
+                const validation = validateDicomFiles(ctData.dicomFiles);
+                if (!validation.valid) {
+                  return (
+                    <div style={{
+                      padding: '20px',
+                      backgroundColor: '#fee2e2',
+                      color: '#dc2626',
+                      borderRadius: '8px',
+                      textAlign: 'left'
+                    }}>
+                      <h3 style={{ marginTop: 0 }}>Ошибки валидации DICOM файлов:</h3>
+                      <ul style={{ marginBottom: 0 }}>
+                        {validation.errors.map((error, i) => (
+                          <li key={i}>{error}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  );
+                }
+              }
+              return (
+                <DWVViewer
+                  files={ctData.dicomFiles}
+                  onLoaded={handleDWVLoaded}
+                  onError={handleDWVError}
+                />
+              );
+            })()}
           </div>
         </div>
       )}

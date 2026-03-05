@@ -49,12 +49,16 @@ const DWVViewer = ({ files, onLoaded, onError }) => {
     if (!containerRef.current || appRef.current) return;
 
     try {
+      console.log('[DWV] Initializing DWV application...');
+
       // Создаем экземпляр DWV приложения
       const app = new dwv.App();
       appRef.current = app;
 
+      console.log('[DWV] DWV App instance created');
+
       // Инициализация приложения с минимальной конфигурацией
-      app.init({
+      const config = {
         containerDivId: 'dwv-viewport',
         tools: {
           Scroll: {},
@@ -72,37 +76,53 @@ const DWVViewer = ({ files, onLoaded, onError }) => {
             options: ['Threshold', 'Sharpen', 'Sobel', 'Gaussian'],
           },
         },
-      });
+      };
 
-      // Обработчики событий
-      app.addEventListener('loadstart', () => {
+      console.log('[DWV] Initializing with config:', config);
+
+      app.init(config);
+
+      console.log('[DWV] DWV initialized successfully');
+
+      // Обработчики событий с детальным логированием
+      app.addEventListener('loadstart', (event) => {
+        console.log('[DWV] loadstart event:', event);
         setIsLoading(true);
         setLoadProgress(0);
       });
 
       app.addEventListener('loadprogress', (event) => {
+        console.log('[DWV] loadprogress:', {
+          loaded: event.loaded,
+          total: event.total,
+          lengthComputable: event.lengthComputable,
+          progress: event.lengthComputable ? ((event.loaded / event.total) * 100).toFixed(2) + '%' : 'N/A'
+        });
         setLoadProgress(event.loaded || 0);
       });
 
       app.addEventListener('load', (event) => {
+        console.log('[DWV] load event:', event);
         setIsLoading(false);
         setIsReady(true);
-        
+
         // Получаем метаданные
         try {
           const meta = app.getMetaData(0);
+          console.log('[DWV] Metadata loaded:', meta);
           setMetaData(meta);
-          
+
           // Получаем текущие значения окна/уровня
           const viewController = app.getViewController();
           if (viewController) {
             const wl = viewController.getWindowLevel();
+            console.log('[DWV] Window/Level:', wl);
             setWindowLevel({ width: wl.width, center: wl.center });
           }
         } catch (e) {
-          console.warn('Error getting metadata:', e);
+          console.error('[DWV] Error getting metadata:', e);
         }
-        
+
         if (onLoaded) {
           onLoaded({
             data: event.data,
@@ -111,34 +131,82 @@ const DWVViewer = ({ files, onLoaded, onError }) => {
         }
       });
 
-      app.addEventListener('loadend', () => {
+      app.addEventListener('loadend', (event) => {
+        console.log('[DWV] loadend event:', event);
         setIsLoading(false);
       });
 
+      app.addEventListener('loaditem', (event) => {
+        console.log('[DWV] loaditem event:', {
+          item: event.data,
+          index: event.index,
+          total: event.total
+        });
+      });
+
       app.addEventListener('error', (event) => {
+        console.error('[DWV] ERROR event:', {
+          message: event.message,
+          error: event.error,
+          type: event.type,
+          detail: event.detail,
+          data: event.data
+        });
         setIsLoading(false);
-        console.error('DWV Error:', event);
+
+        // Формируем детальное сообщение об ошибке
+        let errorMsg = 'Не удалось обработать DICOM файлы';
+
+        if (event.error) {
+          errorMsg += `\nОшибка: ${event.error}`;
+        }
+
+        if (event.message) {
+          errorMsg += `\n${event.message}`;
+        }
+
+        if (event.detail) {
+          errorMsg += `\nДетали: ${event.detail}`;
+        }
+
+        // Если есть информация о файле, добавляем её
+        if (event.data && event.data.file) {
+          errorMsg += `\nФайл: ${event.data.file.name} (${event.data.file.size} bytes)`;
+        }
+
+        console.error('[DWV] Final error message:', errorMsg);
+
         if (onError) {
-          onError(event.message || 'Ошибка загрузки DICOM');
+          onError(errorMsg);
         }
       });
 
       // Установка начального инструмента
+      console.log('[DWV] Setting initial tool to Scroll...');
       app.setTool('Scroll');
+      console.log('[DWV] Initial tool set successfully');
       setIsReady(true);
+      console.log('[DWV] DWV viewer is ready');
     } catch (error) {
-      console.error('Error initializing DWV:', error);
+      console.error('[DWV] Error initializing DWV:', error);
+      console.error('[DWV] Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
       if (onError) {
         onError('Ошибка инициализации DWV: ' + error.message);
       }
     }
 
     return () => {
+      console.log('[DWV] Cleanup: Disposing DWV application...');
       if (appRef.current) {
         try {
           appRef.current.dispose();
+          console.log('[DWV] DWV application disposed');
         } catch (e) {
-          console.warn('Error disposing DWV:', e);
+          console.error('[DWV] Error disposing DWV:', e);
         }
         appRef.current = null;
       }
@@ -153,25 +221,104 @@ const DWVViewer = ({ files, onLoaded, onError }) => {
       try {
         const fileArray = Array.isArray(files) ? files : [files];
         
+        console.log('[DWV] Starting file load. Total files received:', fileArray.length);
+        
+        // Логируем информацию о всех файлах
+        fileArray.forEach((file, index) => {
+          console.log(`[DWV] File ${index + 1}:`, {
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            lastModified: file.lastModified,
+            constructor: file.constructor.name
+          });
+        });
+        
         // Фильтруем только DICOM файлы
         const dicomFiles = fileArray.filter(file => {
-          if (!file) return false;
+          if (!file) {
+            console.warn('[DWV] Skipping null/undefined file');
+            return false;
+          }
           const name = file.name?.toLowerCase() || '';
-          return name.endsWith('.dcm') || name.endsWith('.dicom') || file.type === 'application/dicom';
+          const isDicom = name.endsWith('.dcm') || name.endsWith('.dicom') || file.type === 'application/dicom';
+          
+          if (!isDicom) {
+            console.warn('[DWV] Skipping non-DICOM file:', file.name, 'type:', file.type);
+          }
+          
+          return isDicom;
         });
 
         if (dicomFiles.length === 0) {
-          onError && onError('Не найдено DICOM файлов');
+          const errorMsg = 'Не найдено DICOM файлов. Убедитесь, что файлы имеют расширение .dcm или .dicom';
+          console.error('[DWV]', errorMsg);
+          onError && onError(errorMsg);
           return;
         }
 
-        console.log('Loading DICOM files:', dicomFiles.map(f => f.name));
+        console.log('[DWV] DICOM files to load:', dicomFiles.length);
+        console.log('[DWV] DICOM files:', dicomFiles.map(f => ({
+          name: f.name,
+          size: f.size,
+          type: f.type
+        })));
         
-        // Загружаем файлы в DWV
-        appRef.current.loadFiles(dicomFiles);
+        // Валидация файлов перед загрузкой
+        for (let i = 0; i < dicomFiles.length; i++) {
+          const file = dicomFiles[i];
+          if (file.size === 0) {
+            const errorMsg = `Файл "${file.name}" имеет размер 0 байт`;
+            console.error('[DWV]', errorMsg);
+            onError && onError(errorMsg);
+            return;
+          }
+          if (!(file instanceof File)) {
+            console.error('[DWV] File is not a File object:', file.constructor.name, file);
+          }
+        }
+        
+        // Проверяем, что DWV app готов
+        if (!appRef.current) {
+          const errorMsg = 'DWV приложение не инициализировано';
+          console.error('[DWV]', errorMsg);
+          onError && onError(errorMsg);
+          return;
+        }
+        
+        console.log('[DWV] Calling app.loadFiles()...');
+        
+        // Загружаем файлы в DWV с детальной обработкой ошибок
+        try {
+          appRef.current.loadFiles(dicomFiles);
+        } catch (loadError) {
+          console.error('[DWV] Error during app.loadFiles():', loadError);
+          console.error('[DWV] Error details:', {
+            message: loadError.message,
+            stack: loadError.stack,
+            name: loadError.name
+          });
+          
+          // Формируем детальное сообщение об ошибке
+          const errorDetails = [];
+          errorDetails.push(`Ошибка: ${loadError.message}`);
+          
+          if (loadError.name) {
+            errorDetails.push(`Тип: ${loadError.name}`);
+          }
+          
+          if (dicomFiles.length > 0) {
+            errorDetails.push(`Файлов: ${dicomFiles.length}`);
+            errorDetails.push(`Первый файл: ${dicomFiles[0].name} (${dicomFiles[0].size} bytes, ${dicomFiles[0].type})`);
+          }
+          
+          onError && onError(errorDetails.join('\n'));
+        }
+        
       } catch (error) {
-        console.error('Error loading files:', error);
-        onError && onError(error.message);
+        console.error('[DWV] Unexpected error in loadFiles:', error);
+        console.error('[DWV] Error stack:', error.stack);
+        onError && onError(`Неожиданная ошибка: ${error.message}`);
       }
     };
 
