@@ -6,7 +6,19 @@ const PatientMedicalForm = ({ formData, onChange, onSubmit }) => {
 
     if (fieldPath) {
       // Обработка вложенных полей (например, registration.city)
-      onChange(e, fieldPath);
+      if (type === 'checkbox') {
+        // Для checkbox используем checked вместо value
+        // Особый случай для chinPosition - переключается между 'Вправо' и ''
+        let checkboxValue;
+        if (fieldPath === 'faceFront.chinPosition') {
+          checkboxValue = checked ? 'Вправо' : '';
+        } else {
+          checkboxValue = checked ? 'Да' : 'Нет';
+        }
+        onChange({ target: { name, value: checkboxValue } }, fieldPath);
+      } else {
+        onChange(e, fieldPath);
+      }
     } else if (type === 'checkbox') {
       // Для checkbox используем checked вместо value
       onChange({ target: { name, value: checked ? 'Да' : 'Нет' } });
