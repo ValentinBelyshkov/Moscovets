@@ -1102,6 +1102,36 @@ const PatientCardRefactored = ({ patient: patientProp, onBack }) => {
           <button
             className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-medium hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
             onClick={() => {
+              const formData = medicalCardForm;
+              const maritalStatusText = {
+                'married': 'зарегистрированный брак',
+                'unregistered': 'незарегистрированный брак',
+                'single': 'не состоит',
+                'unknown': 'неизвестно'
+              };
+              const educationText = {
+                'higher': 'высшее',
+                'incomplete_higher': 'неполное высшее',
+                'secondary': 'среднее (полное)',
+                'basic': 'начальное',
+                'none': 'не имеет',
+                'unknown': 'неизвестно'
+              };
+              const localityText = {
+                'urban': 'городская',
+                'rural': 'сельская'
+              };
+              const profileTypeText = {
+                'convex': 'Выпуклый',
+                'concave': 'Вогнутый',
+                'straight': 'Прямой'
+              };
+              const lipPositionText = {
+                'protruding': 'Выступает',
+                'retracted': 'Западает',
+                'normal': 'Правильное'
+              };
+
               const cardContent = `<!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -1109,36 +1139,93 @@ const PatientCardRefactored = ({ patient: patientProp, onBack }) => {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Медицинская карта - ${patient?.full_name || patient?.fullName || 'Пациент'}</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; }
-    h1 { color: #1e3a5f; }
-    .section { margin-bottom: 20px; padding: 15px; background: #f5f5f5; border-radius: 8px; }
-    .label { color: #666; font-size: 12px; }
-    .value { font-weight: bold; }
+    body { font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; line-height: 1.6; }
+    h1 { color: #1e3a5f; border-bottom: 3px solid #1e3a5f; padding-bottom: 10px; }
+    h2 { color: #2c5282; margin-top: 30px; margin-bottom: 15px; font-size: 18px; }
+    h3 { color: #4a5568; margin-top: 20px; margin-bottom: 10px; font-size: 16px; }
+    .section { margin-bottom: 25px; padding: 20px; background: #f7fafc; border-radius: 8px; border-left: 4px solid #3182ce; }
+    .subsection { margin-bottom: 15px; padding: 15px; background: #ffffff; border-radius: 6px; border: 1px solid #e2e8f0; }
+    .label { color: #718096; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .value { font-weight: bold; color: #2d3748; }
+    .row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #edf2f7; }
+    .row:last-child { border-bottom: none; }
+    .field { flex: 1; }
+    .field + .field { margin-left: 20px; }
+    .checkbox-item { display: flex; align-items: center; padding: 5px 0; }
+    .checkbox-marker { margin-right: 10px; font-weight: bold; }
+    .yes { color: #38a169; }
+    .no { color: #e53e3e; }
   </style>
 </head>
 <body>
   <h1>Медицинская карта пациента</h1>
+
   <div class="section">
-    <p class="label">ФИО</p>
-    <p class="value">${patient?.full_name || patient?.fullName || 'Не указано'}</p>
+    <h2>1. Личные данные</h2>
+    <div class="row"><span class="label">ФИО:</span><span class="value">${patient?.full_name || patient?.fullName || formData.fullName || 'Не указано'}</span></div>
+    <div class="row"><span class="label">Пол:</span><span class="value">${formData.gender === 'male' ? 'Мужской' : 'Женский'}</span></div>
+    <div class="row"><span class="label">Дата рождения:</span><span class="value">${formData.birthDay ? `${formData.birthDay}.${formData.birthMonth}.${formData.birthYear}` : formatDate(patient?.birth_date || patient?.birthDate)}</span></div>
   </div>
+
   <div class="section">
-    <p class="label">Дата рождения</p>
-    <p class="value">${formatDate(patient?.birth_date || patient?.birthDate)}</p>
+    <h2>2. Место регистрации</h2>
+    <div class="row"><span class="label">Республика, край, область:</span><span class="value">${formData.registration?.republic || 'Не указано'}</span></div>
+    <div class="row"><span class="label">Район:</span><span class="value">${formData.registration?.region || 'Не указано'}</span></div>
+    <div class="row"><span class="label">Город:</span><span class="value">${formData.registration?.city || 'Не указано'}</span></div>
+    <div class="row"><span class="label">Населенный пункт:</span><span class="value">${formData.registration?.settlement || 'Не указано'}</span></div>
+    <div class="row"><span class="label">Улица:</span><span class="value">${formData.registration?.street || 'Не указано'}</span></div>
+    <div class="row">
+      <span class="label">Дом:</span><span class="value">${formData.registration?.house || 'Не указано'}</span>
+      <span class="label">Квартира:</span><span class="value">${formData.registration?.apartment || 'Не указано'}</span>
+    </div>
+    <div class="row"><span class="label">Телефон:</span><span class="value">${formData.registration?.phone || patient?.contact_info || patient?.contactInfo || 'Не указано'}</span></div>
   </div>
+
   <div class="section">
-    <p class="label">Пол</p>
-    <p class="value">${patient?.gender === 'male' ? 'Мужской' : 'Женский'}</p>
+    <h2>3. Социальная информация</h2>
+    <div class="row"><span class="label">Местность:</span><span class="value">${localityText[formData.locality] || 'Не указано'}</span></div>
+    <div class="row"><span class="label">Семейное положение:</span><span class="value">${maritalStatusText[formData.maritalStatus] || 'Не указано'}</span></div>
+    <div class="row"><span class="label">Образование:</span><span class="value">${educationText[formData.education] || 'Не указано'}</span></div>
   </div>
+
   <div class="section">
-    <p class="label">Телефон</p>
-    <p class="value">${patient?.contact_info || patient?.contactInfo || 'Не указано'}</p>
+    <h2>4. Осмотр лица. Кефалометрия</h2>
+    <h3>19.1. Лицо анфас</h3>
+    <div class="subsection">
+      <div class="row"><span class="label">Ширина лица (zy-zy):</span><span class="value">${formData.faceFront?.width || 'Не указано'} мм</span></div>
+      <div class="row"><span class="label">Высота лица (n-me):</span><span class="value">${formData.faceFront?.heightNasal || 'Не указано'} мм</span></div>
+      <div class="row"><span class="label">Высота нижней трети (n-sn):</span><span class="value">${formData.faceFront?.heightSubnasal || 'Не указано'} мм</span></div>
+      <div class="checkbox-item"><span class="checkbox-marker">${formData.faceFront?.symmetry === 'Да' ? '✓' : '✗'}</span><span>Симметричное лицо</span></div>
+      <div class="checkbox-item"><span class="checkbox-marker">${formData.faceFront?.chinPosition === 'Вправо' ? '✓' : '✗'}</span><span>Подбородок смещен вправо</span></div>
+      <div class="checkbox-item"><span class="checkbox-marker">${formData.faceFront?.nasolabialFold === 'Да' ? '✓' : '✗'}</span><span>Выраженность надподбородочной складки</span></div>
+      <div class="checkbox-item"><span class="checkbox-marker">${formData.faceFront?.lipClosure === 'Да' ? '✓' : '✗'}</span><span>Губы сомкнуты</span></div>
+      <div class="checkbox-item"><span class="checkbox-marker">${formData.faceFront?.gumSmile === 'Да' ? '✓' : '✗'}</span><span>Симптом «десневой улыбки»</span></div>
+    </div>
+
+    <h3>19.2. Лицо в профиль</h3>
+    <div class="subsection">
+      <div class="row"><span class="label">Тип профиля:</span><span class="value">${profileTypeText[formData.faceProfile?.type] || 'Не указано'}</span></div>
+      <div class="row"><span class="label">Верхняя губа:</span><span class="value">${lipPositionText[formData.faceProfile?.upperLip] || 'Не указано'}</span></div>
+      <div class="row"><span class="label">Нижняя губа:</span><span class="value">${lipPositionText[formData.faceProfile?.lowerLip] || 'Не указано'}</span></div>
+      <div class="row"><span class="label">Подбородок:</span><span class="value">${lipPositionText[formData.faceProfile?.chin] || 'Не указано'}</span></div>
+    </div>
   </div>
+
   <div class="section">
-    <p class="label">Жалобы</p>
-    <p class="value">${patient?.complaints || 'Неровные зубы, неправильный прикус, эстетический дефект'}</p>
+    <h2>5. Жалобы пациента</h2>
+    <p class="value">${patient?.complaints || 'Не указаны'}</p>
   </div>
-  <p style="margin-top: 40px; color: #999; font-size: 12px;">Дата формирования: ${new Date().toLocaleDateString('ru-RU')}</p>
+
+  <div class="section">
+    <h2>6. Дополнительная информация</h2>
+    <div class="row"><span class="label">ID пациента:</span><span class="value">#${patient?.id || 'Не указано'}</span></div>
+    <div class="row"><span class="label">Дата обращения:</span><span class="value">${formatDate(patient?.created_at || patient?.lastVisit)}</span></div>
+    <div class="row"><span class="label">Лечащий врач:</span><span class="value">Иванов А.С.</span></div>
+  </div>
+
+  <p style="margin-top: 40px; color: #718096; font-size: 12px; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 20px;">
+    Дата формирования: ${new Date().toLocaleDateString('ru-RU')} ${new Date().toLocaleTimeString('ru-RU')}
+  </p>
 </body>
 </html>`;
               const blob = new Blob([cardContent], { type: 'text/html;charset=utf-8' });
